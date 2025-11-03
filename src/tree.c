@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <errno.h>
@@ -54,43 +55,38 @@ static ssize_t run_or_cmd(const struct double_node_t *or_node) {
   return status2;
 }
 
-ssize_t run_pipe_cmd(const struct double_node_t *const pipe_node) {
-  pid_t pid_1, pid_2;
-  int status_1, status_2;
-  int fds[2];
-
-  if (pipe(fds) < 0) {
-    return 80;
+/* TODO: use masking to set fd in the flag and not `|` */
+static ssize_t run_redir_cmd(struct redir_node_t *const redir_node) {
+  if (redir_node->in >> (sizeof(redir_node->in)*8-1)) {
+    int fd = open(redir_node->file_in, O_CREAT);
+    printf("%d\n", fd);
+    redir_node->in |= fd;
+    printf("%u\n", redir_node->in);
+    /* close(fd); */
   }
 
-  pid_1 = fork();
-  if (pid_1 == 0) {
-    close(fds[0]);
-    dup2(fds[1], STDOUT_FILENO);
-    exit(run(pipe_node->left_node));
+  if (redir_node->out >> (sizeof(redir_node->out)*8-1)) {
+    int fd = open(redir_node->file_out, O_CREAT);
+    redir_node->out |= fd;
+    /* close(fd); */
   }
 
-  pid_2 = fork();
-  if (pid_2 == 0) {
-    close(fds[1]);
-    dup2(fds[0], STDIN_FILENO);
-    exit(run(pipe_node->right_node));
+  if (redir_node->err >> (sizeof(redir_node->err)*8-1)) {
+    int fd = open(redir_node->file_err, O_CREAT);
+    redir_node->err |= fd;
+    /* close(fd); */
   }
-
-  waitpid(pid_1, &status_1, 0);
-  waitpid(pid_2, &status_2, 0);
-
   return 0;
 }
 
 ssize_t run(const struct node_t *const node) {
   switch(node->type) {
+  case NODE_TYPE_REDIR:
+    return run_redir_cmd((struct redir_node_t *)node->node);
   case NODE_TYPE_OR:
     return run_or_cmd((struct double_node_t*)node->node);
   case NODE_TYPE_AND:
     return run_and_cmd((struct double_node_t*)node->node);
-  case NODE_TYPE_PIPE:
-    return run_pipe_cmd((struct double_node_t*)node->node);
   case NODE_TYPE_CMD:
     return run_cmd((struct cmd_node_t *)node->node);
   default:
