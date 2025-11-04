@@ -19,17 +19,17 @@ int main() {
   int status;
 
   struct cmd_t cmd_1 = {
-    .executable = "/bin/ls",
-    .env = { NULL },
-    .argv = { "ls", "-z", "/Users/foufou/", NULL },
-    .argc = 2
+    "/bin/ls",
+    { NULL },
+    { "ls", "-z", "/Users/foufou/", NULL },
+    2
   };
 
   struct cmd_t cmd_2 = {
-    .executable = "/bin/cat",
-    .env = { NULL },
-    .argv = { "cat", "/tmp/err.txt", NULL },
-    .argc = 2
+    "/bin/cat",
+    { NULL },
+    { "cat", "/tmp/err.txt", NULL },
+    2
   };
 
   cmd_node_1.cmd = &cmd_1;
