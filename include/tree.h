@@ -1,5 +1,6 @@
 #ifndef __TREE_H__
 #define __TREE_H__
+#include <stdlib.h>
 #include <cmd.h>
 #include <stdint.h>
 
@@ -38,6 +39,6 @@ struct node_t {
 };
 
 /* TODO: only for testing, remove declaration later */
-ssize_t read_here_doc(const char *const eod);
-ssize_t run(const struct node_t *const node);
+int read_here_doc(const char *const eod);
+int run(const struct node_t *const node);
 #endif

@@ -8,18 +8,18 @@
 #include <tree.h>
 #include <cmd.h>
 
-ssize_t read_here_doc(const char *const eod) {
-  (void)eod;
+int read_here_doc(const char *const eod) {
   FILE *temp_file;
+  (void)eod;
   temp_file = tmpfile();
   if (temp_file == NULL) {
     return -1;
   }
-  close(fd);
+  fclose(temp_file);
   return 0;
 }
 
-static ssize_t run_cmd(const struct cmd_node_t *cmd_node) {
+static int run_cmd(const struct cmd_node_t *cmd_node) {
   int status, exit_code;
   pid_t pid;
 
@@ -40,7 +40,7 @@ static ssize_t run_cmd(const struct cmd_node_t *cmd_node) {
   return EXIT_FAILURE;
 }
 
-static ssize_t run_and_cmd(const struct double_node_t *and_node) {
+static int run_and_cmd(const struct double_node_t *and_node) {
   int status1, status2;
 
   status1 = run(and_node->left_node);
@@ -53,7 +53,7 @@ static ssize_t run_and_cmd(const struct double_node_t *and_node) {
   return status2;
 }
 
-static ssize_t run_or_cmd(const struct double_node_t *or_node) {
+static int run_or_cmd(const struct double_node_t *or_node) {
   int status1, status2;
 
   status1 = run(or_node->left_node);
@@ -68,7 +68,7 @@ static ssize_t run_or_cmd(const struct double_node_t *or_node) {
 
 /* TODO: use masking to set fd in the flag and not `|` */
 /* TODO: here doc implementation */
-static ssize_t run_redir_cmd(struct redir_node_t *const redir_node) {
+static int run_redir_cmd(struct redir_node_t *const redir_node) {
   pid_t pid;
   flag_t in_options;
   flag_t out_options;
@@ -166,7 +166,7 @@ static ssize_t run_redir_cmd(struct redir_node_t *const redir_node) {
   return EXIT_FAILURE;
 }
 
-static ssize_t run_pipe_cmd(struct double_node_t *const pipe_node) {
+static int run_pipe_cmd(struct double_node_t *const pipe_node) {
   pid_t pid_1, pid_2;
   int fds[2];
   int status_1;
@@ -212,7 +212,7 @@ static ssize_t run_pipe_cmd(struct double_node_t *const pipe_node) {
   return EXIT_FAILURE;
 }
 
-ssize_t run(const struct node_t *const node) {
+int run(const struct node_t *const node) {
   switch(node->type) {
   case NODE_TYPE_CMD:
     return run_cmd((struct cmd_node_t *)node->node);
