@@ -57,6 +57,7 @@ static ssize_t run_or_cmd(const struct double_node_t *or_node) {
 }
 
 /* TODO: use masking to set fd in the flag and not `|` */
+/* TODO: here doc implementation */
 static ssize_t run_redir_cmd(struct redir_node_t *const redir_node) {
   pid_t pid;
   flag_t in_options;
