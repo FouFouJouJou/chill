@@ -27,7 +27,7 @@ static ssize_t run_cmd(const struct cmd_node_t *cmd_node) {
     return WEXITSTATUS(status);
   }
 
-  return -1;
+  return EXIT_FAILURE;
 }
 
 static ssize_t run_and_cmd(const struct double_node_t *and_node) {
@@ -153,19 +153,67 @@ static ssize_t run_redir_cmd(struct redir_node_t *const redir_node) {
     return WEXITSTATUS(status);
   }
 
-  return -1;
+  return EXIT_FAILURE;
+}
+
+static ssize_t run_pipe_cmd(struct double_node_t *const pipe_node) {
+  pid_t pid_1, pid_2;
+  int fds[2];
+  int status_1;
+  int status_2;
+
+  if (pipe(fds) == -1) {
+    return errno;
+  }
+
+  pid_1 = fork();
+  if (pid_1 == 0) {
+    close(fds[0]);
+    dup2(fds[1], STDOUT_FILENO);
+    exit(run(pipe_node->left_node));
+  }
+
+  pid_2 = fork();
+  if (pid_2 == 0) {
+    close(fds[1]);
+    dup2(fds[0], STDIN_FILENO);
+    exit(run(pipe_node->right_node));
+  }
+
+  close(fds[0]);
+  close(fds[1]);
+
+  waitpid(pid_1, &status_1, 0);
+  waitpid(pid_2, &status_2, 0);
+
+
+  if (WIFEXITED(status_1)) {
+    int exit_code;
+    exit_code = WEXITSTATUS(status_1);
+    if (exit_code != EXIT_SUCCESS) {
+      return exit_code;
+    }
+  }
+
+  if (WIFEXITED(status_2)) {
+    return WEXITSTATUS(status_2);
+  }
+
+  return EXIT_FAILURE;
 }
 
 ssize_t run(const struct node_t *const node) {
   switch(node->type) {
-  case NODE_TYPE_REDIR:
-    return run_redir_cmd((struct redir_node_t *)node->node);
-  case NODE_TYPE_OR:
-    return run_or_cmd((struct double_node_t*)node->node);
-  case NODE_TYPE_AND:
-    return run_and_cmd((struct double_node_t*)node->node);
   case NODE_TYPE_CMD:
     return run_cmd((struct cmd_node_t *)node->node);
+  case NODE_TYPE_AND:
+    return run_and_cmd((struct double_node_t*)node->node);
+  case NODE_TYPE_OR:
+    return run_or_cmd((struct double_node_t*)node->node);
+  case NODE_TYPE_REDIR:
+    return run_redir_cmd((struct redir_node_t *)node->node);
+  case NODE_TYPE_PIPE:
+    return run_pipe_cmd((struct double_node_t *)node->node);
   default:
     exit(80);
   }

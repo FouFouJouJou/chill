@@ -10,25 +10,27 @@ int main() {
 
   struct double_node_t and_node;
   struct redir_node_t redir_node;
+  struct double_node_t pipe_node;
 
   struct node_t node_1;
   struct node_t node_2;
   struct node_t node_3;
   struct node_t node_4;
+  struct node_t node_5;
 
   int status;
 
   struct cmd_t cmd_1 = {
     "/bin/ls",
     { NULL },
-    { "ls", "-z", "/Users/foufou/", NULL },
-    2
+    { "ls", "-l", "/Users/foufou/", NULL },
+    3
   };
 
   struct cmd_t cmd_2 = {
-    "/bin/cat",
+    "/usr/bin/wc",
     { NULL },
-    { "cat", "/tmp/err.txt", NULL },
+    { "wc", "-l", NULL },
     2
   };
 
@@ -43,7 +45,7 @@ int main() {
   redir_node.node = &node_1;
   redir_node.in = 0x00000000;
   redir_node.out = 0x00000000;
-  redir_node.err = 0x80000000;
+  redir_node.err = 0x00000000;
 
   strcpy(redir_node.file_out, "/tmp/out.txt");
   strcpy(redir_node.file_err, "/tmp/err.txt");
@@ -51,14 +53,19 @@ int main() {
   node_3.type = NODE_TYPE_REDIR;
   node_3.node = (void*)&redir_node;
 
-
   and_node.left_node = &node_3;
   and_node.right_node = &node_2;
 
   node_4.type = NODE_TYPE_AND;
   node_4.node = (void*)&and_node;
 
-  status = run(&node_4);
+  pipe_node.left_node = &node_1;
+  pipe_node.right_node = &node_2;
+
+  node_5.type = NODE_TYPE_PIPE;
+  node_5.node = (void*)&pipe_node;
+
+  status = run(&node_5);
   exit(status);
 
   /* exit(EXIT_SUCCESS); */

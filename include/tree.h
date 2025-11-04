@@ -8,6 +8,7 @@ enum node_type_t {
   , NODE_TYPE_AND
   , NODE_TYPE_OR
   , NODE_TYPE_REDIR
+  , NODE_TYPE_PIPE
 };
 
 struct redir_node_t {
