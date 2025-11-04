@@ -8,7 +8,7 @@ A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
   - [X] or
   - [X] and
   - [X] pipes
-  - [X] IO redirections
+  - [X] I/O redirections
   - [ ] more...
 - [ ] Env [0%]
   - [ ] Injection
