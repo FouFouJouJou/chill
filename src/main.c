@@ -21,14 +21,14 @@ int main() {
   struct cmd_t cmd_1 = {
     .executable = "/bin/ls",
     .env = { NULL },
-    .argv = { "ls", "-l", "/Users/foufou/", NULL },
+    .argv = { "ls", "-z", "/Users/foufou/", NULL },
     .argc = 2
   };
 
   struct cmd_t cmd_2 = {
     .executable = "/bin/cat",
     .env = { NULL },
-    .argv = { "cat", "/tmp/out.txt", NULL },
+    .argv = { "cat", "/tmp/err.txt", NULL },
     .argc = 2
   };
 
@@ -42,10 +42,11 @@ int main() {
 
   redir_node.node = &node_1;
   redir_node.in = 0x00000000;
-  redir_node.out = 0xC0000000;
-  redir_node.err = 0x00000000;
+  redir_node.out = 0x00000000;
+  redir_node.err = 0x80000000;
 
   strcpy(redir_node.file_out, "/tmp/out.txt");
+  strcpy(redir_node.file_err, "/tmp/err.txt");
 
   node_3.type = NODE_TYPE_REDIR;
   node_3.node = (void*)&redir_node;
@@ -57,9 +58,8 @@ int main() {
   node_4.type = NODE_TYPE_AND;
   node_4.node = (void*)&and_node;
 
-
   status = run(&node_4);
-  printf("exit code: %d\n", status);
+  exit(status);
 
-  exit(EXIT_SUCCESS);
+  /* exit(EXIT_SUCCESS); */
 }

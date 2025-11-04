@@ -26,6 +26,7 @@ static ssize_t run_cmd(const struct cmd_node_t *cmd_node) {
   if (WIFEXITED(status)) {
     return WEXITSTATUS(status);
   }
+
   return -1;
 }
 
@@ -81,7 +82,13 @@ static ssize_t run_redir_cmd(struct redir_node_t *const redir_node) {
     int here_doc;
     here_doc = (flag_to_options(redir_node->in) & 1);
     if (!here_doc) {
-      fd = open(redir_node->file_in, O_CREAT|O_RDONLY);
+      fd = open(redir_node->file_in, O_CREAT|O_RDONLY, 0644);
+#ifdef DEBUG
+      printf("in <- %d\n", fd);
+#endif
+      if (fd == -1) {
+	return errno;
+      }
       redir_node->in |= fd;
     }
   }
@@ -90,7 +97,13 @@ static ssize_t run_redir_cmd(struct redir_node_t *const redir_node) {
     int fd;
     int append;
     append = (flag_to_options(redir_node->out) & 1);
-    fd = open(redir_node->file_out, O_CREAT|O_WRONLY|(append ? O_APPEND : O_TRUNC));
+    fd = open(redir_node->file_out, O_CREAT|O_WRONLY|(append ? O_APPEND : O_TRUNC), 0644);
+#ifdef DEBUG
+    printf("out -> %d\n", fd);
+#endif
+    if (fd == -1) {
+      return errno;
+    }
     redir_node->out |= fd;
   }
 
@@ -98,7 +111,13 @@ static ssize_t run_redir_cmd(struct redir_node_t *const redir_node) {
     int fd;
     int append;
     append = (flag_to_options(redir_node->err) & 1);
-    fd = open(redir_node->file_err, O_CREAT|O_WRONLY|(append ? O_APPEND : O_TRUNC));
+    fd = open(redir_node->file_err, O_CREAT|O_WRONLY|(append ? O_APPEND : O_TRUNC), 0644);
+#ifdef DEBUG
+    printf("err -> %d\n", fd);
+#endif
+    if (fd == -1) {
+      return errno;
+    }
     redir_node->err |= fd;
   }
 
@@ -128,7 +147,12 @@ static ssize_t run_redir_cmd(struct redir_node_t *const redir_node) {
   if (err_redir) {
     close(flag_to_fd(redir_node->err));
   }
-  return 0;
+
+  if (WIFEXITED(status)) {
+    return WEXITSTATUS(status);
+  }
+
+  return -1;
 }
 
 ssize_t run(const struct node_t *const node) {
