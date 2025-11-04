@@ -57,24 +57,76 @@ static ssize_t run_or_cmd(const struct double_node_t *or_node) {
 
 /* TODO: use masking to set fd in the flag and not `|` */
 static ssize_t run_redir_cmd(struct redir_node_t *const redir_node) {
-  if (redir_node->in >> (sizeof(redir_node->in)*8-1)) {
-    int fd = open(redir_node->file_in, O_CREAT);
-    printf("%d\n", fd);
-    redir_node->in |= fd;
-    printf("%u\n", redir_node->in);
-    /* close(fd); */
+  pid_t pid;
+  flag_t in_options;
+  flag_t out_options;
+  flag_t err_options;
+
+  int in_redir;
+  int out_redir;
+  int err_redir;
+  int status;
+
+  (void)pid;
+  in_options = flag_to_options(redir_node->in);
+  out_options = flag_to_options(redir_node->out);
+  err_options = flag_to_options(redir_node->err);
+
+  in_redir = in_options >> (FLAG_OPTIONS_SIZE-1) == 1;
+  out_redir = out_options >> (FLAG_OPTIONS_SIZE-1) == 1;
+  err_redir = err_options >> (FLAG_OPTIONS_SIZE-1) == 1;
+
+  if (in_redir) {
+    int fd;
+    int here_doc;
+    here_doc = (flag_to_options(redir_node->in) & 1);
+    if (!here_doc) {
+      fd = open(redir_node->file_in, O_CREAT|O_RDONLY);
+      redir_node->in |= fd;
+    }
   }
 
-  if (redir_node->out >> (sizeof(redir_node->out)*8-1)) {
-    int fd = open(redir_node->file_out, O_CREAT);
+  if (out_redir) {
+    int fd;
+    int append;
+    append = (flag_to_options(redir_node->out) & 1);
+    fd = open(redir_node->file_out, O_CREAT|O_WRONLY|(append ? O_APPEND : O_TRUNC));
     redir_node->out |= fd;
-    /* close(fd); */
   }
 
-  if (redir_node->err >> (sizeof(redir_node->err)*8-1)) {
-    int fd = open(redir_node->file_err, O_CREAT);
+  if (err_redir) {
+    int fd;
+    int append;
+    append = (flag_to_options(redir_node->err) & 1);
+    fd = open(redir_node->file_err, O_CREAT|O_WRONLY|(append ? O_APPEND : O_TRUNC));
     redir_node->err |= fd;
-    /* close(fd); */
+  }
+
+  pid = fork();
+
+  if (pid == 0) {
+    if (in_redir) {
+      dup2(flag_to_fd(redir_node->in), STDIN_FILENO);
+    }
+    if (out_redir) {
+      dup2(flag_to_fd(redir_node->out), STDOUT_FILENO);
+    }
+    if (err_redir) {
+      dup2(flag_to_fd(redir_node->err), STDERR_FILENO);
+    }
+    exit(run(redir_node->node));
+  }
+
+  waitpid(pid, &status, 0);
+
+  if (in_redir) {
+    close(flag_to_fd(redir_node->in));
+  }
+  if (out_redir) {
+    close(flag_to_fd(redir_node->out));
+  }
+  if (err_redir) {
+    close(flag_to_fd(redir_node->err));
   }
   return 0;
 }

@@ -14,7 +14,7 @@ struct redir_node_t {
   /* redirection flag: 00000000000000000000000000000000. */
   /* MSB indicates if redirection is on or off. */
   /* Rest of the flag is the file descriptor. */
-  uint32_t in, out, err;
+  flag_t in, out, err;
   char file_in[1<<8], file_out[1<<8], file_err[1<<8];
   struct node_t *node;
 };
