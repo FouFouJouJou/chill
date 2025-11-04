@@ -13,7 +13,6 @@ static ssize_t run_cmd(const struct cmd_node_t *cmd_node) {
   pid_t pid;
 
   pid = fork();
-
   if (pid == 0) {
     struct cmd_t *cmd = cmd_node->cmd;
     exit_code = execve(cmd->executable, cmd->argv, cmd->env);

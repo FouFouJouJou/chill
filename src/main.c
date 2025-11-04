@@ -4,6 +4,8 @@
 #include <cmd.h>
 #include <tree.h>
 
+extern char **environ;
+
 int main() {
   struct cmd_node_t cmd_node_1;
   struct cmd_node_t cmd_node_2;
@@ -21,16 +23,16 @@ int main() {
   int status;
 
   struct cmd_t cmd_1 = {
-    "/bin/ls",
+    "/usr/bin/env",
     { NULL },
-    { "ls", "-l", "/Users/foufou/", NULL },
-    3
+    { "env", NULL },
+    1
   };
 
   struct cmd_t cmd_2 = {
     "/usr/bin/wc",
-    { NULL },
-    { "wc", "-l", NULL },
+    {  NULL },
+    { "wc", "-l", "/tmp/out.txt",NULL },
     2
   };
 
@@ -42,9 +44,8 @@ int main() {
   node_2.type = NODE_TYPE_CMD;
   node_2.node = (void*)&cmd_node_2;
 
-  redir_node.node = &node_1;
   redir_node.in = 0x00000000;
-  redir_node.out = 0x00000000;
+  redir_node.out = 0x80000000;
   redir_node.err = 0x00000000;
 
   strcpy(redir_node.file_out, "/tmp/out.txt");
@@ -65,7 +66,10 @@ int main() {
   node_5.type = NODE_TYPE_PIPE;
   node_5.node = (void*)&pipe_node;
 
-  status = run(&node_5);
+  redir_node.node = &node_5;
+
+  /* status = run(&node_3); */
+  status = run(&node_1);
   exit(status);
 
   /* exit(EXIT_SUCCESS); */
