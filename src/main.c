@@ -7,70 +7,73 @@
 extern char **environ;
 
 int main() {
-  struct cmd_node_t cmd_node_1;
-  struct cmd_node_t cmd_node_2;
+  /* struct cmd_node_t cmd_node_1; */
+  /* struct cmd_node_t cmd_node_2; */
 
-  struct double_node_t and_node;
-  struct redir_node_t redir_node;
-  struct double_node_t pipe_node;
+  /* struct double_node_t and_node; */
+  /* struct redir_node_t redir_node; */
+  /* struct double_node_t pipe_node; */
 
-  struct node_t node_1;
-  struct node_t node_2;
-  struct node_t node_3;
-  struct node_t node_4;
-  struct node_t node_5;
+  /* struct node_t node_1; */
+  /* struct node_t node_2; */
+  /* struct node_t node_3; */
+  /* struct node_t node_4; */
+  /* struct node_t node_5; */
 
-  int status;
+  /* int status; */
 
-  struct cmd_t cmd_1 = {
-    "/usr/bin/env",
-    { NULL },
-    { "env", NULL },
-    1
-  };
+  /* struct cmd_t cmd_1 = { */
+  /*   "/usr/bin/env", */
+  /*   { NULL }, */
+  /*   { "env", NULL }, */
+  /*   1 */
+  /* }; */
 
-  struct cmd_t cmd_2 = {
-    "/usr/bin/wc",
-    {  NULL },
-    { "wc", "-l", "/tmp/out.txt",NULL },
-    2
-  };
+  /* struct cmd_t cmd_2 = { */
+  /*   "/usr/bin/wc", */
+  /*   {  NULL }, */
+  /*   { "wc", "-l", "/tmp/out.txt",NULL }, */
+  /*   2 */
+  /* }; */
 
-  cmd_node_1.cmd = &cmd_1;
-  node_1.type = NODE_TYPE_CMD;
-  node_1.node = (void*)&cmd_node_1;
+  /* cmd_node_1.cmd = &cmd_1; */
+  /* node_1.type = NODE_TYPE_CMD; */
+  /* node_1.node = (void*)&cmd_node_1; */
 
-  cmd_node_2.cmd = &cmd_2;
-  node_2.type = NODE_TYPE_CMD;
-  node_2.node = (void*)&cmd_node_2;
+  /* cmd_node_2.cmd = &cmd_2; */
+  /* node_2.type = NODE_TYPE_CMD; */
+  /* node_2.node = (void*)&cmd_node_2; */
 
-  redir_node.in = 0x00000000;
-  redir_node.out = 0x80000000;
-  redir_node.err = 0x00000000;
+  /* redir_node.in = 0x00000000; */
+  /* redir_node.out = 0x80000000; */
+  /* redir_node.err = 0x00000000; */
 
-  strcpy(redir_node.file_out, "/tmp/out.txt");
-  strcpy(redir_node.file_err, "/tmp/err.txt");
+  /* strcpy(redir_node.file_out, "/tmp/out.txt"); */
+  /* strcpy(redir_node.file_err, "/tmp/err.txt"); */
 
-  node_3.type = NODE_TYPE_REDIR;
-  node_3.node = (void*)&redir_node;
+  /* node_3.type = NODE_TYPE_REDIR; */
+  /* node_3.node = (void*)&redir_node; */
 
-  and_node.left_node = &node_3;
-  and_node.right_node = &node_2;
+  /* and_node.left_node = &node_3; */
+  /* and_node.right_node = &node_2; */
 
-  node_4.type = NODE_TYPE_AND;
-  node_4.node = (void*)&and_node;
+  /* node_4.type = NODE_TYPE_AND; */
+  /* node_4.node = (void*)&and_node; */
 
-  pipe_node.left_node = &node_1;
-  pipe_node.right_node = &node_2;
+  /* pipe_node.left_node = &node_1; */
+  /* pipe_node.right_node = &node_2; */
 
-  node_5.type = NODE_TYPE_PIPE;
-  node_5.node = (void*)&pipe_node;
+  /* node_5.type = NODE_TYPE_PIPE; */
+  /* node_5.node = (void*)&pipe_node; */
 
-  redir_node.node = &node_5;
+  /* redir_node.node = &node_5; */
 
-  /* status = run(&node_3); */
-  status = run(&node_1);
-  exit(status);
+  /* /\* status = run(&node_3); *\/ */
+  /* status = run(&node_1); */
+  /* exit(status); */
 
   /* exit(EXIT_SUCCESS); */
+
+  read_here_doc("EOF");
+  return 0;
 }

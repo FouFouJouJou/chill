@@ -8,6 +8,17 @@
 #include <tree.h>
 #include <cmd.h>
 
+ssize_t read_here_doc(const char *const eod) {
+  (void)eod;
+  FILE *temp_file;
+  temp_file = tmpfile();
+  if (temp_file == NULL) {
+    return -1;
+  }
+  close(fd);
+  return 0;
+}
+
 static ssize_t run_cmd(const struct cmd_node_t *cmd_node) {
   int status, exit_code;
   pid_t pid;
@@ -83,14 +94,14 @@ static ssize_t run_redir_cmd(struct redir_node_t *const redir_node) {
     here_doc = (flag_to_options(redir_node->in) & 1);
     if (!here_doc) {
       fd = open(redir_node->file_in, O_CREAT|O_RDONLY, 0644);
-#ifdef DEBUG
-      printf("in <- %d\n", fd);
-#endif
       if (fd == -1) {
 	return errno;
       }
-      redir_node->in |= fd;
     }
+#ifdef DEBUG
+    printf("in <- %d\n", fd);
+#endif
+    redir_node->in |= fd;
   }
 
   if (out_redir) {

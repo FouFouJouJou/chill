@@ -17,6 +17,9 @@ struct redir_node_t {
   /* Rest of the flag is the file descriptor. */
   flag_t in, out, err;
   char file_in[1<<8], file_out[1<<8], file_err[1<<8];
+
+  /* End of here doc limiter if the here doc bit in the `in` flag is set */
+  char eod[1<<8];
   struct node_t *node;
 };
 
@@ -34,5 +37,7 @@ struct node_t {
   void *node;
 };
 
+/* TODO: only for testing, remove declaration later */
+ssize_t read_here_doc(const char *const eod);
 ssize_t run(const struct node_t *const node);
 #endif
