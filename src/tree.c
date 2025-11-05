@@ -9,6 +9,23 @@
 #include <cmd.h>
 
 /* TODO: make `file_name` random */
+static int read_here_string(const char *const here_string) {
+  int fd;
+  const char *const file_name = "/tmp/fileXXXXXXXXX.txt";
+  fd = open(file_name, O_CREAT|O_RDWR|O_TRUNC, 0644);
+  if (fd == -1) {
+    perror("Error opening input file");
+    exit(errno);
+  }
+  write(fd, here_string, strlen(here_string));
+  write(fd, "\n", 1);
+
+  lseek(fd, 0, SEEK_SET);
+
+  return fd;
+}
+
+/* TODO: make `file_name` random */
 static int read_here_doc(const char *const eod) {
   int fd;
   const char *const file_name = "/tmp/fileXXXXXX.txt";
@@ -133,8 +150,7 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
       fd = read_here_doc(redir_node->eod);
     }
     else if(here_string) {
-      printf("here string\n");
-      fd = 0;
+      fd = read_here_string(redir_node->here_string);
     }
     else {
       fd = open(redir_node->file_in, O_CREAT|O_RDONLY, 0644);

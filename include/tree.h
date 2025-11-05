@@ -12,17 +12,15 @@ enum node_type_t {
   , NODE_TYPE_PIPE
 };
 
+/* Redirection flag: 00000000000000000000000000000000. */
+/* MSB indicates if redirection is on or off. */
 struct redir_node_t {
-  /* Redirection flag: 00000000000000000000000000000000. */
-  /* MSB indicates if redirection is on or off. */
-
   /* Most significant 3 bits control behaviour for in flags */
   /* 000 => No redirection */
   /* 100 => Redirection to `file_in` */
-  /* 110 => Redirection to here_string */
-  /* 101 => Redirection to here_doc */
-  /* 111 => Redirection to here_doc */
-
+  /* 110 => Redirection to `here_string` */
+  /* 101 => Redirection to here doc */
+  /* 111 => Redirection to here doc */
   flag_t in;
 
   /* Most significant 2 bits control behaviour for out and err flags */
@@ -35,6 +33,7 @@ struct redir_node_t {
 
   /* End of here doc limiter if the here doc bit in the `in` flag is set */
   char eod[1<<8];
+  char here_string[1<<8];
   struct node_t *node;
 };
 

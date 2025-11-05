@@ -46,6 +46,7 @@ int main() {
 
   redir_node.in = 0xC0000000;
   strcpy(redir_node.eod, "EOD");
+  strcpy(redir_node.here_string, "I love the way you lie");
   redir_node.out = 0x00000000;
   redir_node.err = 0x00000000;
 
