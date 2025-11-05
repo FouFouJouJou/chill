@@ -2,25 +2,25 @@
 A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
 
 * Features [1/5]
-- [ ] Lexing
-- [X] Parsing [100%]
+- [ ] lexing
+- [X] parsing [100%]
   - [X] commands
   - [X] or
   - [X] and
   - [X] pipes
   - [X] I/O redirections [100%]
-    - [X] Input [100%]
+    - [X] input [100%]
       - [X] files
       - [X] here docs
       - [X] here strings
-    - [X] Output
-    - [X] Error
-- [-] Env [33%]
-  - [X] Injection
+    - [X] output
+    - [X] error
+- [-] env [33%]
+  - [X] injection
   - [ ] export
   - [ ] unexport
 
-- [ ] Builtins [0%]
+- [ ] builtins [0%]
   - [ ] export
   - [ ] cd
   - [ ] echo
