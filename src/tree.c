@@ -8,7 +8,7 @@
 #include <tree.h>
 #include <cmd.h>
 
-/* TODO: make `file_name` */
+/* TODO: make `file_name` random */
 static int read_here_doc(const char *const eod) {
   int fd;
   const char *const file_name = "/tmp/fileXXXXXX.txt";
