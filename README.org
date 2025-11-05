@@ -3,13 +3,18 @@ A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
 
 * Features [0/3]
 - [ ] Lexing
-- [-] Parsing [83%]
+- [-] Parsing [80%]
   - [X] commands
   - [X] or
   - [X] and
   - [X] pipes
-  - [X] I/O redirections
-  - [ ] more...
+  - [-] I/O redirections [66%]
+    - [-] Input [66%]
+      - [X] files
+      - [X] here docs
+      - [ ] here strings
+    - [X] Output [0%]
+    - [X] Error [0%]
 - [ ] Env [0%]
   - [ ] Injection
   - [ ] export
