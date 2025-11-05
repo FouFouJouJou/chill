@@ -44,11 +44,12 @@ int main() {
   node_2.type = NODE_TYPE_CMD;
   node_2.node = (void*)&cmd_node_2;
 
-  redir_node.in = 0xC0000000;
+  redir_node.in = 0x80000000;
   strcpy(redir_node.eod, "EOD");
-  redir_node.out = 0xC0000000;
+  redir_node.out = 0x00000000;
   redir_node.err = 0x00000000;
 
+  strcpy(redir_node.file_in, "/tmp/fileXXXXXX.txt");
   strcpy(redir_node.file_out, "/tmp/out.txt");
   strcpy(redir_node.file_err, "/tmp/err.txt");
 

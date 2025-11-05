@@ -13,8 +13,8 @@ A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
       - [X] files
       - [X] here docs
       - [ ] here strings
-    - [X] Output [0%]
-    - [X] Error [0%]
+    - [X] Output
+    - [X] Error
 - [ ] Env [0%]
   - [ ] Injection
   - [ ] export
