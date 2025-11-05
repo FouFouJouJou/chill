@@ -17,6 +17,7 @@ static int read_here_string(const char *const here_string) {
     perror("Error opening input file");
     exit(errno);
   }
+
   write(fd, here_string, strlen(here_string));
   write(fd, "\n", 1);
 

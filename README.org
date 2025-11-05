@@ -1,21 +1,29 @@
 * Chill
 A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
 
-* Features [0/3]
+* Features [1/5]
 - [ ] Lexing
-- [-] Parsing [80%]
+- [X] Parsing [100%]
   - [X] commands
   - [X] or
   - [X] and
   - [X] pipes
-  - [-] I/O redirections [66%]
-    - [-] Input [66%]
+  - [X] I/O redirections [100%]
+    - [X] Input [100%]
       - [X] files
       - [X] here docs
-      - [ ] here strings
+      - [X] here strings
     - [X] Output
     - [X] Error
-- [ ] Env [0%]
-  - [ ] Injection
+- [-] Env [33%]
+  - [X] Injection
   - [ ] export
   - [ ] unexport
+
+- [ ] Builtins [0%]
+  - [ ] export
+  - [ ] cd
+  - [ ] echo
+  - [ ] more...
+
+- [ ] Jobs
