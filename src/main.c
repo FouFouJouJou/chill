@@ -30,9 +30,9 @@ int main() {
   };
 
   struct cmd_t cmd_2 = {
-    "/usr/bin/wc",
+    "/usr/bin/cat",
     {  NULL },
-    { "wc", "-l", "/tmp/out.txt",NULL },
+    { "cat", NULL },
     2
   };
 
@@ -44,8 +44,9 @@ int main() {
   node_2.type = NODE_TYPE_CMD;
   node_2.node = (void*)&cmd_node_2;
 
-  redir_node.in = 0x00000000;
-  redir_node.out = 0x80000000;
+  redir_node.in = 0xC0000000;
+  strcpy(redir_node.eod, "EOD");
+  redir_node.out = 0x00000000;
   redir_node.err = 0x00000000;
 
   strcpy(redir_node.file_out, "/tmp/out.txt");
@@ -67,13 +68,14 @@ int main() {
   node_5.type = NODE_TYPE_PIPE;
   node_5.node = (void*)&pipe_node;
 
-  redir_node.node = &node_5;
+  redir_node.node = &node_2;
 
+  (void)node_5;
   /* status = run(&node_3); */
-  status = run(&node_1);
+  status = run(&node_3);
   exit(status);
 
-  exit(EXIT_SUCCESS);
+  /* exit(EXIT_SUCCESS); */
 
   /* read_here_doc("EOF"); */
   return 0;

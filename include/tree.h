@@ -38,7 +38,5 @@ struct node_t {
   void *node;
 };
 
-/* TODO: only for testing, remove declaration later */
-int read_here_doc(const char *const eod);
 int run(const struct node_t *const node);
 #endif

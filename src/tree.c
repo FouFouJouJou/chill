@@ -8,15 +8,43 @@
 #include <tree.h>
 #include <cmd.h>
 
-int read_here_doc(const char *const eod) {
-  FILE *temp_file;
-  (void)eod;
-  temp_file = tmpfile();
-  if (temp_file == NULL) {
-    return -1;
+static int read_here_doc(const char *const eod) {
+  int fd;
+  char *file_name = "/tmp/fileXXXXXX.txt";
+  char buffer[1<<8] = {0};
+  char line[1<<8] = {0};
+  size_t input_size;
+  size_t bits_written;
+  size_t eod_len;
+  /* int bytes_read; */
+  eod_len = strlen(eod);
+  fd = open(file_name, O_CREAT|O_WRONLY|O_TRUNC, 0644);
+  if (fd == -1) {
+    return errno;
   }
-  fclose(temp_file);
-  return 0;
+
+  input_size = 0;
+  while(1) {
+    int line_len;
+    fgets(line, sizeof(line), stdin);
+    line_len = strlen(line);
+    if (strlen(line) > strlen(eod) && !strncmp(line+line_len-eod_len-1, eod, eod_len)) {
+      strncpy(buffer+input_size, line, line_len-eod_len-1);
+      input_size+=line_len-eod_len-1;
+      break;
+    }
+    strncpy(buffer+input_size, line, strlen(line));
+    input_size+=strlen(line);
+  }
+
+  buffer[input_size] = '\0';
+  printf("%s\n", buffer);
+  bits_written = write(fd, buffer, strlen(buffer));
+  if (bits_written != input_size) {
+    perror("tmp file write failure\n");
+  }
+
+  return fd;
 }
 
 static int run_cmd(const struct cmd_node_t *cmd_node) {
@@ -97,11 +125,13 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
       if (fd == -1) {
 	return errno;
       }
+    } else {
+      fd = read_here_doc(redir_node->eod);
     }
-#ifdef DEBUG
-    printf("in <- %d\n", fd);
-#endif
     redir_node->in |= fd;
+/* #ifdef DEBUG */
+    /* printf("in <- %d\n", flag_to_fd(redir_node->in)); */
+/* #endif */
   }
 
   if (out_redir) {
