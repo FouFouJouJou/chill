@@ -8,9 +8,10 @@
 #include <tree.h>
 #include <cmd.h>
 
+/* TODO: make `file_name` */
 static int read_here_doc(const char *const eod) {
   int fd;
-  char *file_name = "/tmp/fileXXXXXX.txt";
+  const char *const file_name = "/tmp/fileXXXXXX.txt";
   char buffer[1<<8] = {0};
   char line[1<<8] = {0};
   size_t input_size;
@@ -21,7 +22,7 @@ static int read_here_doc(const char *const eod) {
   fd = open(file_name, O_CREAT|O_RDWR|O_TRUNC, 0644);
   if (fd == -1) {
     perror("Error opening input file");
-    exit(80);
+    exit(errno);
   }
 
   input_size = 0;
@@ -223,6 +224,10 @@ static int run_pipe_cmd(struct double_node_t *const pipe_node) {
   }
 
   pid_1 = fork();
+  if (pid_1 == -1) {
+    errno = 80;
+    perror("fork failed");
+  }
   if (pid_1 == 0) {
     close(fds[0]);
     if (dup2(fds[1], STDOUT_FILENO) == -1) {
