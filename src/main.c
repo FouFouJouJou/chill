@@ -30,9 +30,9 @@ int main() {
   };
 
   struct cmd_t cmd_2 = {
-    "/usr/bin/cat",
-    {  NULL },
-    { "cat", NULL },
+    "/usr/bin/wc",
+    { NULL },
+    { "wc", NULL },
     2
   };
 

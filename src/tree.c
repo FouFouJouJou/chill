@@ -18,14 +18,16 @@ static int read_here_doc(const char *const eod) {
   size_t eod_len;
   /* int bytes_read; */
   eod_len = strlen(eod);
-  fd = open(file_name, O_CREAT|O_WRONLY|O_TRUNC, 0644);
+  fd = open(file_name, O_CREAT|O_RDWR|O_TRUNC, 0644);
   if (fd == -1) {
-    return errno;
+    perror("Error opening input file");
+    exit(80);
   }
 
   input_size = 0;
   while(1) {
     int line_len;
+    printf("> ");
     fgets(line, sizeof(line), stdin);
     line_len = strlen(line);
     if (strlen(line) > strlen(eod) && !strncmp(line+line_len-eod_len-1, eod, eod_len)) {
@@ -38,11 +40,16 @@ static int read_here_doc(const char *const eod) {
   }
 
   buffer[input_size] = '\0';
+#ifdef DEBUG
   printf("%s\n", buffer);
+#endif
   bits_written = write(fd, buffer, strlen(buffer));
   if (bits_written != input_size) {
     perror("tmp file write failure\n");
+    exit(80);
   }
+
+  lseek(fd, 0, SEEK_SET);
 
   return fd;
 }
@@ -129,9 +136,9 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
       fd = read_here_doc(redir_node->eod);
     }
     redir_node->in |= fd;
-/* #ifdef DEBUG */
-    /* printf("in <- %d\n", flag_to_fd(redir_node->in)); */
-/* #endif */
+#ifdef DEBUG
+    printf("in <- %d\n", flag_to_fd(redir_node->in));
+#endif
   }
 
   if (out_redir) {
@@ -166,13 +173,22 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
 
   if (pid == 0) {
     if (in_redir) {
-      dup2(flag_to_fd(redir_node->in), STDIN_FILENO);
+      if(dup2(flag_to_fd(redir_node->in), STDIN_FILENO) == -1) {
+	perror("dup2 failed");
+	exit(errno);
+      }
     }
     if (out_redir) {
-      dup2(flag_to_fd(redir_node->out), STDOUT_FILENO);
+      if (dup2(flag_to_fd(redir_node->out), STDOUT_FILENO) == -1) {
+	perror("dup2 failed");
+	exit(errno);
+      }
     }
     if (err_redir) {
-      dup2(flag_to_fd(redir_node->err), STDERR_FILENO);
+      if (dup2(flag_to_fd(redir_node->err), STDERR_FILENO) == -1) {
+	perror("dup2 failed");
+	exit(errno);
+      }
     }
     exit(run(redir_node->node));
   }
@@ -209,14 +225,20 @@ static int run_pipe_cmd(struct double_node_t *const pipe_node) {
   pid_1 = fork();
   if (pid_1 == 0) {
     close(fds[0]);
-    dup2(fds[1], STDOUT_FILENO);
+    if (dup2(fds[1], STDOUT_FILENO) == -1) {
+      perror("dup2 failed");
+      exit(errno);
+    }
     exit(run(pipe_node->left_node));
   }
 
   pid_2 = fork();
   if (pid_2 == 0) {
     close(fds[1]);
-    dup2(fds[0], STDIN_FILENO);
+    if (dup2(fds[0], STDIN_FILENO)) {
+      perror("dup2 failed");
+      exit(errno);
+    }
     exit(run(pipe_node->right_node));
   }
 
