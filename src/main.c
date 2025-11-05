@@ -46,7 +46,7 @@ int main() {
 
   redir_node.in = 0xC0000000;
   strcpy(redir_node.eod, "EOD");
-  redir_node.out = 0x00000000;
+  redir_node.out = 0xC0000000;
   redir_node.err = 0x00000000;
 
   strcpy(redir_node.file_out, "/tmp/out.txt");
@@ -71,12 +71,8 @@ int main() {
   redir_node.node = &node_2;
 
   (void)node_5;
-  /* status = run(&node_3); */
   status = run(&node_3);
   exit(status);
 
-  /* exit(EXIT_SUCCESS); */
-
-  /* read_here_doc("EOF"); */
   return 0;
 }
