@@ -13,10 +13,20 @@ enum node_type_t {
 };
 
 struct redir_node_t {
-  /* redirection flag: 00000000000000000000000000000000. */
+  /* Redirection flag: 00000000000000000000000000000000. */
   /* MSB indicates if redirection is on or off. */
   /* Rest of the flag is the file descriptor. */
-  flag_t in, out, err;
+
+  /* Most significant 3 bits control behaviour for in flags */
+  /* 000 => No redirection */
+  /* 100 => Redirection to `file_in` */
+  /* 110 => Redirection to here_string */
+  /* 101 => Redirection to here_doc */
+  /* 111 => Redirection to here_doc */
+
+  flag_t in
+  flag_t out
+  flag_t err;
   char file_in[1<<8], file_out[1<<8], file_err[1<<8];
 
   /* End of here doc limiter if the here doc bit in the `in` flag is set */

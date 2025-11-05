@@ -2,6 +2,7 @@
 #define __CMD_H__
 #include <stdint.h>
 #define FLAG_OPTIONS_SIZE 2
+#define INPUT_FLAG_OPTIONS_SIZE 3
 
 typedef uint32_t flag_t;
 
@@ -15,5 +16,7 @@ struct cmd_t {
 
 flag_t flag_to_options(flag_t flag);
 flag_t flag_to_fd(flag_t flag);
+flag_t input_flag_to_options(flag_t flag);
+flag_t input_flag_to_fd(flag_t flag);
 void printf_cmd(const struct cmd_t *const cmd);
 #endif

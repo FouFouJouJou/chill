@@ -17,7 +17,6 @@ static int read_here_doc(const char *const eod) {
   size_t input_size;
   size_t bits_written;
   size_t eod_len;
-  /* int bytes_read; */
   eod_len = strlen(eod);
   fd = open(file_name, O_CREAT|O_RDWR|O_TRUNC, 0644);
   if (fd == -1) {
@@ -116,29 +115,36 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
   int status;
 
   (void)pid;
-  in_options = flag_to_options(redir_node->in);
+  in_options = input_flag_to_options(redir_node->in);
   out_options = flag_to_options(redir_node->out);
   err_options = flag_to_options(redir_node->err);
 
-  in_redir = in_options >> (FLAG_OPTIONS_SIZE-1) == 1;
+  in_redir = in_options >> (INPUT_FLAG_OPTIONS_SIZE-1) == 1;
   out_redir = out_options >> (FLAG_OPTIONS_SIZE-1) == 1;
   err_redir = err_options >> (FLAG_OPTIONS_SIZE-1) == 1;
 
   if (in_redir) {
     int fd;
     int here_doc;
-    here_doc = (flag_to_options(redir_node->in) & 1);
-    if (!here_doc) {
+    int here_string;
+    here_doc = (in_options & 1);
+    here_string = (in_options >> 1 & 1);
+    if (here_doc) {
+      fd = read_here_doc(redir_node->eod);
+    }
+    else if(here_string) {
+      printf("here string\n");
+      fd = 0;
+    }
+    else {
       fd = open(redir_node->file_in, O_CREAT|O_RDONLY, 0644);
       if (fd == -1) {
 	return errno;
       }
-    } else {
-      fd = read_here_doc(redir_node->eod);
     }
     redir_node->in |= fd;
 #ifdef DEBUG
-    printf("in <- %d\n", flag_to_fd(redir_node->in));
+    printf("in <- %d\n", input_flag_to_fd(redir_node->in));
 #endif
   }
 
@@ -197,7 +203,7 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
   waitpid(pid, &status, 0);
 
   if (in_redir) {
-    close(flag_to_fd(redir_node->in));
+    close(input_flag_to_fd(redir_node->in));
   }
   if (out_redir) {
     close(flag_to_fd(redir_node->out));
