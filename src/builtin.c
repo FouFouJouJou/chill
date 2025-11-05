@@ -16,9 +16,12 @@ static int cd(int argc, char **argv, char **env) {
 }
 
 static int echo(int argc, char **argv, char **env) {
+  int i;
   (void) env;
-  (void) argc;
-  (void) argv;
+  for (i=0; i<argc-1; ++i) {
+    printf("%s", (argv+1)[i]);
+  }
+
   return 0;
 }
 

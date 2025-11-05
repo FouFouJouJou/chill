@@ -30,9 +30,9 @@ int main() {
   };
 
   struct cmd_t cmd_2 = {
-    "/bin/ls",
-    { "ls", NULL },
-    2,
+    "echo",
+    { "echo", "hello, world", "this is the end", NULL },
+    3,
     { NULL },
   };
 
