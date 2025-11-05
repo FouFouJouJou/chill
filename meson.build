@@ -9,6 +9,7 @@ incdir = include_directories('include')
 
 sources = files(
   'src/tree.c',
+  'src/builtin.c',
   'src/cmd.c',
   'src/main.c'
 )

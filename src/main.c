@@ -23,17 +23,17 @@ int main() {
   int status;
 
   struct cmd_t cmd_1 = {
-    "/usr/bin/env",
+    "cd",
+    { "cd", "/Users/foufou/", NULL },
+    2,
     { NULL },
-    { "env", NULL },
-    1
   };
 
   struct cmd_t cmd_2 = {
-    "/usr/bin/wc",
+    "/bin/ls",
+    { "ls", NULL },
+    2,
     { NULL },
-    { "wc", NULL },
-    2
   };
 
   cmd_node_1.cmd = &cmd_1;
@@ -57,7 +57,7 @@ int main() {
   node_3.type = NODE_TYPE_REDIR;
   node_3.node = (void*)&redir_node;
 
-  and_node.left_node = &node_3;
+  and_node.left_node = &node_1;
   and_node.right_node = &node_2;
 
   node_4.type = NODE_TYPE_AND;
@@ -73,7 +73,7 @@ int main() {
   redir_node.node = &node_2;
 
   (void)node_5;
-  status = run(&node_3);
+  status = run(&node_4);
   exit(status);
 
   return 0;

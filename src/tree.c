@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <builtin.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <errno.h>
@@ -81,6 +82,7 @@ static int run_cmd(const struct cmd_node_t *cmd_node) {
     struct cmd_t *cmd = cmd_node->cmd;
     exit_code = execve(cmd->executable, cmd->argv, cmd->env);
     if (exit_code == -1) {
+      perror("run_cmd: error");
       exit(errno);
     }
   }
@@ -294,8 +296,17 @@ static int run_pipe_cmd(struct double_node_t *const pipe_node) {
 
 int run(const struct node_t *const node) {
   switch(node->type) {
-  case NODE_TYPE_CMD:
-    return run_cmd((struct cmd_node_t *)node->node);
+  case NODE_TYPE_CMD: {
+    builtin_t fn;
+    struct cmd_node_t *cmd_node;
+
+    cmd_node = (struct cmd_node_t *)node->node;
+    fn = cmd_to_builtin(cmd_node->cmd->executable);
+    if (fn != NULL) {
+      return fn(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
+    }
+    return run_cmd(cmd_node);
+  }
   case NODE_TYPE_AND:
     return run_and_cmd((struct double_node_t*)node->node);
   case NODE_TYPE_OR:
