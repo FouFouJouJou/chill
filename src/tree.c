@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <tree.h>
 #include <cmd.h>
+#include <env.h>
 
 /* TODO: make `file_name` random */
 static int read_here_string(const char *const here_string) {
@@ -64,7 +65,7 @@ static int read_here_doc(const char *const eod) {
 #endif
   bits_written = write(fd, buffer, strlen(buffer));
   if (bits_written != input_size) {
-    perror("tmp file write failure\n");
+    perror("tmp file write failure");
     exit(80);
   }
 
@@ -301,11 +302,16 @@ int run(const struct node_t *const node) {
     struct cmd_node_t *cmd_node;
 
     cmd_node = (struct cmd_node_t *)node->node;
+    setup_env(cmd_node->cmd->env);
+    /* evaluate(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env); */
     fn = cmd_to_builtin(cmd_node->cmd->executable);
     if (fn != NULL) {
-      return fn(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
+      /* return fn(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env); */
+      return 0;
     }
-    return run_cmd(cmd_node);
+    /* return run_cmd(cmd_node); */
+    (void) run_cmd;
+    return 0;
   }
   case NODE_TYPE_AND:
     return run_and_cmd((struct double_node_t*)node->node);

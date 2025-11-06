@@ -8,6 +8,7 @@ project(
 incdir = include_directories('include')
 
 sources = files(
+  'src/env.c',
   'src/tree.c',
   'src/builtin.c',
   'src/cmd.c',

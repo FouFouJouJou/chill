@@ -4,8 +4,6 @@
 #include <cmd.h>
 #include <tree.h>
 
-extern char **environ;
-
 int main() {
   struct cmd_node_t cmd_node_1;
   struct cmd_node_t cmd_node_2;
@@ -23,17 +21,17 @@ int main() {
   int status;
 
   struct cmd_t cmd_1 = {
-    "cd",
-    { "cd", "/Users/foufou/", NULL },
-    2,
-    { NULL },
+    "/bin/ls",
+    { "ls", "/Users/foufou/", "/Users/foufou/.vimrc", "$foufou2", NULL },
+    4,
+    { "foufou=FouFou1", NULL },
   };
 
   struct cmd_t cmd_2 = {
-    "echo",
-    { "echo", "hello, world", "this is the end, ", "$USER",NULL },
-    4,
-    { "USER=foufou", NULL },
+    "/usr/bin/wc",
+    { "wc", "/Users/foufou/.vimrc", NULL },
+    1,
+    { "foufou=foufou._.", NULL },
   };
 
   cmd_node_1.cmd = &cmd_1;
@@ -73,7 +71,7 @@ int main() {
   redir_node.node = &node_2;
 
   (void)node_5;
-  status = run(&node_4);
+  status = run(&node_1);
   exit(status);
 
   return 0;
