@@ -70,6 +70,7 @@ int main() {
 
   redir_node.node = &node_2;
 
+  (void)node_3;
   (void)node_5;
   status = run(&node_1);
   exit(status);

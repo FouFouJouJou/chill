@@ -303,7 +303,7 @@ int run(const struct node_t *const node) {
 
     cmd_node = (struct cmd_node_t *)node->node;
     setup_env(cmd_node->cmd->env);
-    /* evaluate(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env); */
+    evaluate(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
     fn = cmd_to_builtin(cmd_node->cmd->executable);
     if (fn != NULL) {
       /* return fn(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env); */
