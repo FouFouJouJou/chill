@@ -40,64 +40,27 @@ size_t setup_env(char **cmd_env) {
 }
 
 static char *get_env_value(const char *const var) {
-  char *equals;
-  char *value;
-  size_t var_len;
-  size_t value_len;
-
-  equals = strchr(var, '=');
-  var_len = strlen(var);
-  assert(equals != NULL);
-
-  /* if (*value == '\0') { */
-  /*   return space */
-  /* } */
-
-  /* Fou=val */
-
-  value_len = var+var_len-equals+2;
-  value = calloc(value_len, sizeof(char));
-  strncpy(value, equals+1, value_len);
-  value[value_len] = '\0';
-
-  return value;
+  (void) var;
+  return NULL;
 }
 
 static char *evaluate_arg(char *const arg, char **env) {
+  (void) arg;
   (void) env;
-  /* if (var[0] == '\'') { */
-  /*   return NULL; */
-  /* } */
-
-  /* if (!strncmp(var, "$", strlen(var))) { */
-  /*   return NULL; */
-  /* } */
-
-  if (arg[0] == '$') {
-    char *var_name;
-    int idx;
-    idx = 0;
-    while(arg[idx+1] != '\0' && (isalpha(arg[idx+1]) || isdigit(arg[idx+1]))) {
-      idx++;
-    }
-    var_name = calloc(idx+1, sizeof(char));
-    strncpy(arg, arg+1, idx);
-    var_name[idx] = '\0';
-    return var_name;
-  }
-
+  (void) get_env_value;
   return NULL;
 }
 
 void evaluate(int argc, char **const argv, char **env) {
   int i;
-  (void) env;
   printf("argv: ");
   for (i = 0; i< argc-1; ++i) {
     char *eval;
     eval = evaluate_arg((argv+1)[i], env);
     printf("%s ", eval);
-    free(eval);
+    if (eval != NULL) {
+      free(eval);
+    }
   }
 
   printf("\n");
