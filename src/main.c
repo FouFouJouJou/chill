@@ -31,9 +31,9 @@ int main() {
 
   struct cmd_t cmd_2 = {
     "echo",
-    { "echo", "hello, world", "this is the end", NULL },
-    3,
-    { NULL },
+    { "echo", "hello, world", "this is the end, ", "$USER",NULL },
+    4,
+    { "USER=foufou", NULL },
   };
 
   cmd_node_1.cmd = &cmd_1;

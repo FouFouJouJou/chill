@@ -20,10 +20,9 @@ A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
   - [ ] export
   - [ ] unexport
 
-- [ ] builtins [0%]
-  - [ ] export
-  - [ ] cd
-  - [ ] echo
+- [-] builtins [66%]
+  - [X] cd
+  - [X] echo
   - [ ] more...
 
 - [ ] Jobs
