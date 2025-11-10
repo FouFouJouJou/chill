@@ -22,9 +22,9 @@ int main() {
 
   struct cmd_t cmd_1 = {
     "/bin/ls",
-    { "ls", "/home/fuji/", "/home/fuji/.vimrc", "$SHELL/$env", NULL },
+    { "ls", "/home/fuji/", "/home/fuji/.vimrc", "$SHELL:env", NULL },
     4,
-    { "foufou=FouFou1", NULL },
+    { "FouFou=FouFou1", "JouJou=JouJou1", NULL },
   };
 
   struct cmd_t cmd_2 = {

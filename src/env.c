@@ -33,7 +33,7 @@ size_t setup_env(char **cmd_env) {
   return env_size;
 }
 
-static char *pair_key(const char *const pair) {
+char *pair_key(const char *const pair) {
   char *equals;
   char *result;
   int result_len;
@@ -83,8 +83,9 @@ char* replace(char* string, const char* substr, const char* new_str) {
     }
   }
 
-  result = (char*)malloc(i + count * (new_len - old_len) + 1);
+  result = (char*)malloc(i + count * abs(new_len - old_len) + 1);
   if (result == NULL) {
+    printf("%d %d\n", new_len, old_len);
     perror("memory allocation failed\n");
     exit(EXIT_FAILURE);
   }
@@ -156,34 +157,49 @@ int extract_vars(char *string, char *vars[]) {
   return total;
 }
 
+char *evaluate_env_value(char *key, int argc, char **argv, char **env) {
+  char **env_var;
+  char *value;
+  (void) argc;
+  (void) argv;
+
+  for (env_var = env; *env_var != NULL; ++env_var) {
+    if (!strncmp(key, *env_var, strlen(key))) {
+      value = pair_value(*env_var);
+      return value;
+    }
+  }
+
+  return NULL;
+}
+
 void evaluate(int argc, char **const argv, char **env) {
-  char *var;
-  char *env_var;
   char *arg;
   char *old_arg;
   char *eval_arg;
   char *vars[1<<8];
   int total_vars;
-  int i;
-  (void) argc;
-  (void) argv;
-  (void) env;
+  int i, k;
 
-  arg = "$1 I love $FouFou/$JouJou";
-  eval_arg = NULL;
-  env_var = "$_";
-  var = "a=value";
-  printf("arg: %s\n", arg);
-  printf("%s=%s\n", pair_key(var), pair_value(var));
-  printf("%s(%d)\n", env_var, var_len(env_var));
-  total_vars = extract_vars(arg, vars);
-  for (i=0; i< total_vars; ++i) {
-    if (eval_arg != NULL) {
-      old_arg = eval_arg;
-      eval_arg = replace(eval_arg, vars[i], "XXXX");
-      free(old_arg);
-    } else {
-      eval_arg = replace(arg, vars[i], "XXXX");
+  for (i=0; i< argc; ++i) {
+    eval_arg = NULL;
+    old_arg = NULL;
+    arg = argv[i];
+    total_vars = extract_vars(arg, vars);
+    for (k=0; k< total_vars; ++k) {
+      char *env_val;
+      char *subs;
+      env_val = evaluate_env_value(vars[k]+1, argc, argv, env);
+      subs = env_val == NULL ? "" : env_val;
+      if (k == 0) {
+	eval_arg = replace(arg, vars[k], subs);
+      }
+      else {
+	old_arg = eval_arg;
+	eval_arg = replace(eval_arg, vars[k], subs);
+	free(old_arg);
+      }
     }
+    printf("eval: %s\n", eval_arg == NULL ? arg : eval_arg);
   }
 }
