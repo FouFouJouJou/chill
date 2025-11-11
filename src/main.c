@@ -22,15 +22,15 @@ int main() {
 
   struct cmd_t cmd_1 = {
     "/bin/ls",
-    { "ls", "/home/fuji/", "/home/fuji/.vimrc", "$SHELL:env", NULL },
-    4,
+    { "/bin/ls", "/Users/foufou/", "/Users/foufou/.vimrc", NULL },
+    3,
     { "FouFou=FouFou1", "JouJou=JouJou1", NULL },
   };
 
   struct cmd_t cmd_2 = {
-    "/usr/bin/wc",
-    { "wc", "/Users/foufou/.vimrc", NULL },
-    1,
+    "echo",
+    { "echo", "hello, $foufou", NULL },
+    2,
     { "foufou=foufou._.", NULL },
   };
 
@@ -72,7 +72,7 @@ int main() {
 
   (void)node_3;
   (void)node_5;
-  status = run(&node_1);
+  status = run(&node_2);
   exit(status);
 
   return 0;

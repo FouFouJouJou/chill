@@ -304,14 +304,12 @@ int run(const struct node_t *const node) {
     cmd_node = (struct cmd_node_t *)node->node;
     setup_env(cmd_node->cmd->env);
     evaluate(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
+    memcpy(cmd_node->cmd->executable, cmd_node->cmd->argv[0], strlen(cmd_node->cmd->argv[0]));
     fn = cmd_to_builtin(cmd_node->cmd->executable);
     if (fn != NULL) {
-      /* return fn(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env); */
-      return 0;
+      return fn(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
     }
-    /* return run_cmd(cmd_node); */
-    (void) run_cmd;
-    return 0;
+    return run_cmd(cmd_node);
   }
   case NODE_TYPE_AND:
     return run_and_cmd((struct double_node_t*)node->node);
