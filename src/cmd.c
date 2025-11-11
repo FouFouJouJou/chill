@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <cmd.h>
 
 flag_t flag_to_options(flag_t flag) {

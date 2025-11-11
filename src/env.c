@@ -75,6 +75,7 @@ char* replace(char* string, const char* substr, const char* new_str) {
   int old_len, new_len;
   old_len = strlen(substr);
   new_len = strlen(new_str);
+  count = 0;
 
   for (i = 0; string[i] != '\0'; i++) {
     if (strstr(&string[i], substr) == &string[i]) {
@@ -173,6 +174,7 @@ char *evaluate_env_value(char *key, int argc, char **argv, char **env) {
   return NULL;
 }
 
+/* TODO: free argv[i] after eval (can't now because everything is statically allocated)*/
 void evaluate(int argc, char **const argv, char **env) {
   char *arg;
   char *old_arg;
@@ -181,12 +183,12 @@ void evaluate(int argc, char **const argv, char **env) {
   int total_vars;
   int i, k;
 
-  for (i=0; i< argc; ++i) {
+  for (i = 0; i< argc; ++i) {
     eval_arg = NULL;
     old_arg = NULL;
     arg = argv[i];
     total_vars = extract_vars(arg, vars);
-    for (k=0; k< total_vars; ++k) {
+    for (k = 0; k< total_vars; ++k) {
       char *env_val;
       char *subs;
       env_val = evaluate_env_value(vars[k]+1, argc, argv, env);
@@ -200,6 +202,9 @@ void evaluate(int argc, char **const argv, char **env) {
 	free(old_arg);
       }
     }
-    printf("eval: %s\n", eval_arg == NULL ? arg : eval_arg);
+    argv[i] = eval_arg == NULL ? arg : eval_arg;
+  }
+  for (i = 0; i< argc; ++i) {
+    printf("$%d: %s\n", i, argv[i]);
   }
 }
