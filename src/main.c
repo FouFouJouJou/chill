@@ -14,5 +14,6 @@ int main() {
     printf_token(tkn);
   }
 
+  free(tkns);
   return EXIT_SUCCESS;
 }

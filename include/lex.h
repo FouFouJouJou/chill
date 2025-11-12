@@ -1,5 +1,6 @@
 #ifndef __LEX_H__
 #define __LEX_H__
+
 #define TOTAL_SUPPORTED_TOKENS 32
 
 enum token_type_t {

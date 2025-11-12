@@ -150,6 +150,7 @@ struct token_t *lex(const char *const input) {
     total_tkns+=1;
     tkns[total_tkns-1] = *tkn;
     input_ptr += tkn->size;
+    free(tkn);
   }
 
   tkns[total_tkns] = make_eof_token();
