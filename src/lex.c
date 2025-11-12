@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <assert.h>
 #include <lex.h>
 
@@ -80,6 +81,14 @@ struct token_t *string_tknzr(const char *const string) {
       }
     }
   }
+  else {
+    int size;
+    size = strcspn(string, " ");
+    tkn = malloc(sizeof(struct token_t));
+    tkn->size = size;
+    tkn->type = TOKEN_TYPE_RAW_STRING;
+    memcpy(tkn->literal, string, tkn->size);
+  }
 
   return tkn;
 }
@@ -117,6 +126,7 @@ void lex(const char *const input) {
   append_tknzr(tknzrs,"<", TOKEN_TYPE_REDIR_IN_FILE, &total_tknzrs);
 
   while(*input_ptr != '\0') {
+    input_ptr += strspn(input_ptr, " ");
     for (i=0; i<total_tknzrs; ++i) {
       if ((tkn = symbol_tknzr(input_ptr, tknzrs+i)) != NULL) {
 	goto advance;
