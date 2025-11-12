@@ -1,8 +1,14 @@
 * Chill
 A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
 
-* Features [1/6]
-- [ ] lexing
+* Features [2/6]
+- [X] lexing [100%]
+  - [X] symbols [100%]
+    - [X] and
+    - [X] or
+    - [X] pipes
+    - [X] redirects
+  - [X] strings
 - [ ] parsing
 - [X] exec [100%]
   - [X] commands
