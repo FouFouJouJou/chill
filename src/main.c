@@ -6,6 +6,13 @@
 #include <tree.h>
 
 int main() {
-  lex("NAME=FouFou echo $NAME&&ls $HOME/.vimrc");
+  struct token_t *tkn;
+  struct token_t *tkns;
+
+  tkns = lex("NAME=FouFou echo $NAME&&ls $HOME/.vimrc");
+  for (tkn = tkns; tkn->type != TOKEN_TYPE_EOF; ++tkn) {
+    printf_token(tkn);
+  }
+
   return EXIT_SUCCESS;
 }

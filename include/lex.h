@@ -1,6 +1,6 @@
 #ifndef __LEX_H__
 #define __LEX_H__
-
+#define TOTAL_SUPPORTED_TOKENS 32
 
 enum token_type_t {
   TOKEN_TYPE_RAW_STRING,
@@ -16,6 +16,7 @@ enum token_type_t {
   TOKEN_TYPE_REDIR_OUT_TRUNC,
   TOKEN_TYPE_REDIR_ERR_APPEND,
   TOKEN_TYPE_REDIR_ERR_TRUNC,
+  TOKEN_TYPE_EOF,
   TOKEN_TYPE_TOTAL
 };
 
@@ -31,7 +32,8 @@ struct tknzr_t {
 };
 
 typedef struct token_t *(*tknzr_fn)(const char *const string, const struct tknzr_t *const tknzr);
+void printf_token(const struct token_t *const token);
 const char *token_type_to_string(enum token_type_t type);
-void lex(const char *const input);
+struct token_t *lex(const char *const input);
 
 #endif

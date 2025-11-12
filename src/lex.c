@@ -99,18 +99,30 @@ void append_tknzr(struct tknzr_t tknzrs[], char *literal, enum token_type_t type
   (*count)+=1;
 }
 
+struct token_t make_eof_token() {
+  struct token_t tkn;
+  tkn.type = TOKEN_TYPE_EOF;
+  return tkn;
+}
+
 void printf_token(const struct token_t *const token) {
   printf("token_t(literal=`%s`, size=%lu, type=%s)\n", token->literal, token->size, token_type_to_string(token->type));
 }
 
-void lex(const char *const input) {
+struct token_t *lex(const char *const input) {
+  struct token_t *tkns;
   struct tknzr_t tknzrs[1<<4];
-  const char *input_ptr;
   struct token_t *tkn;
+  const char *input_ptr;
   size_t i;
   size_t total_tknzrs;
+  size_t total_tkns;
+
   total_tknzrs = 0;
+  total_tkns = 0;
   input_ptr = input;
+
+  tkns = malloc(sizeof(struct token_t) * TOTAL_SUPPORTED_TOKENS);
 
   append_tknzr(tknzrs,"<<<", TOKEN_TYPE_REDIR_IN_HERE_STRING, &total_tknzrs);
   append_tknzr(tknzrs,"2>>", TOKEN_TYPE_REDIR_ERR_APPEND, &total_tknzrs);
@@ -125,7 +137,7 @@ void lex(const char *const input) {
   append_tknzr(tknzrs,">", TOKEN_TYPE_REDIR_OUT_TRUNC, &total_tknzrs);
   append_tknzr(tknzrs,"<", TOKEN_TYPE_REDIR_IN_FILE, &total_tknzrs);
 
-  while(*input_ptr != '\0') {
+  while (*input_ptr != '\0') {
     input_ptr += strspn(input_ptr, " ");
     for (i=0; i<total_tknzrs; ++i) {
       if ((tkn = symbol_tknzr(input_ptr, tknzrs+i)) != NULL) {
@@ -133,10 +145,13 @@ void lex(const char *const input) {
       }
     }
     tkn = string_tknzr(input_ptr);
-    /* TODO: lex strings */
     assert(tkn != NULL);
   advance:
-    printf_token(tkn);
+    total_tkns+=1;
+    tkns[total_tkns-1] = *tkn;
     input_ptr += tkn->size;
   }
+
+  tkns[total_tkns] = make_eof_token();
+  return tkns;
 }
