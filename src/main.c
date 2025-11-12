@@ -6,6 +6,6 @@
 #include <tree.h>
 
 int main() {
-  lex("2>>>><<\"I love the \\'way you lie\"I love it $name_");
+  lex("NAME=FouFou echo $NAME&&ls $HOME/.vimrc");
   return EXIT_SUCCESS;
 }

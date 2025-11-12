@@ -83,7 +83,7 @@ struct token_t *string_tknzr(const char *const string) {
   }
   else {
     int size;
-    size = strcspn(string, " ");
+    size = strcspn(string, " &><|");
     tkn = malloc(sizeof(struct token_t));
     tkn->size = size;
     tkn->type = TOKEN_TYPE_RAW_STRING;
