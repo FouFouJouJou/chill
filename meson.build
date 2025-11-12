@@ -9,6 +9,7 @@ incdir = include_directories('include')
 
 sources = files(
   'src/lex.c',
+  'src/parser.c',
   'src/env.c',
   'src/tree.c',
   'src/builtin.c',
