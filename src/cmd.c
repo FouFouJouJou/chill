@@ -33,11 +33,19 @@ void printf_cmd(const struct cmd_t *const cmd) {
   printf("--------------- CMD ---------------\n");
   printf("exec: %s\n", cmd->executable);
   printf("env: ");
-  printf_process_env((const char **const)cmd->env);
-  printf("args: ");
-
-  for (i=0; i<cmd->argc; ++i) {
-    printf("%s ", cmd->argv[i]);
+  if (cmd->env[0] == NULL) {
+    printf("<empty>\n");
+  } else {
+    printf_process_env((const char **const)cmd->env);
   }
-  printf("\n");
+
+  printf("args: ");
+  if (cmd->argc == 1) {
+    printf("<empty>\n");
+  } else {
+    for (i=0; i<cmd->argc; ++i) {
+      printf("%s ", cmd->argv[i]);
+    }
+    printf("\n");
+  }
 }

@@ -3,6 +3,6 @@
 #include <parser.h>
 
 int main() {
-  parse("echo \"Hello $USER\"");
+  parse("echo");
   return EXIT_SUCCESS;
 }
