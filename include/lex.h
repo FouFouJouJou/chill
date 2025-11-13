@@ -27,6 +27,11 @@ struct token_t {
   size_t size;
 };
 
+struct token_list_t {
+  struct token_t *head;
+  struct token_t *current;
+};
+
 struct tknzr_t {
   char *literal;
   enum token_type_t type;
@@ -35,6 +40,6 @@ struct tknzr_t {
 typedef struct token_t *(*tknzr_fn)(const char *const string, const struct tknzr_t *const tknzr);
 void printf_token(const struct token_t *const token);
 const char *token_type_to_string(enum token_type_t type);
-struct token_t *lex(const char *const input);
+struct token_list_t *lex(const char *const input);
 
 #endif

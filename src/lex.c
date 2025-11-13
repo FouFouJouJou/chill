@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <ctype.h>
 #include <assert.h>
 #include <lex.h>
@@ -67,6 +68,7 @@ struct token_t *string_tknzr(const char *const string) {
     while(*string_p != '\0') {
       chr = strchr(string_p, quotes);
       if (chr == NULL) {
+	fprintf(stderr, "closing quotes missing\n");
 	break;
       }
       if (*(chr-1) == '\\') {
@@ -77,6 +79,7 @@ struct token_t *string_tknzr(const char *const string) {
 	tkn->size = chr - string + 1;
 	tkn->type = quotes == '"' ? TOKEN_TYPE_DOUBLEQ_STRING : TOKEN_TYPE_SINGLEQ_STRING;
 	memcpy(tkn->literal, string, tkn->size);
+	tkn->literal[tkn->size] = '\0';
 	break;
       }
     }
@@ -87,6 +90,7 @@ struct token_t *string_tknzr(const char *const string) {
     tkn = malloc(sizeof(struct token_t));
     tkn->size = size;
     tkn->type = TOKEN_TYPE_RAW_STRING;
+    tkn->literal[tkn->size] = '\0';
     memcpy(tkn->literal, string, tkn->size);
   }
 
@@ -109,7 +113,8 @@ void printf_token(const struct token_t *const token) {
   printf("token_t(literal=`%s`, size=%lu, type=%s)\n", token->literal, token->size, token_type_to_string(token->type));
 }
 
-struct token_t *lex(const char *const input) {
+struct token_list_t *lex(const char *const input) {
+  struct token_list_t *result;
   struct token_t *tkns;
   struct tknzr_t tknzrs[1<<4];
   struct token_t *tkn;
@@ -154,5 +159,8 @@ struct token_t *lex(const char *const input) {
   }
 
   tkns[total_tkns] = make_eof_token();
-  return tkns;
+  result = malloc(sizeof(struct token_list_t));
+  result->head = tkns;
+  result->current = tkns;
+  return result;
 }

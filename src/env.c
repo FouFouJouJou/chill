@@ -8,11 +8,15 @@
 
 extern char **environ;
 
-void printf_process_env(char **const env) {
-  char **var;
+void printf_process_env(const char **const env) {
+  const char **var;
   for (var = env; *var != NULL; var++) {
-    printf("%s\n", *var);
+    printf("%s", *var);
+    if (*(var+1) != NULL) {
+      printf("; ");
+    }
   }
+  printf("\n");
 }
 
 size_t setup_env(char **cmd_env) {
@@ -203,8 +207,5 @@ void evaluate(int argc, char **const argv, char **env) {
       }
     }
     argv[i] = eval_arg == NULL ? arg : eval_arg;
-  }
-  for (i = 0; i< argc; ++i) {
-    printf("$%d: %s\n", i, argv[i]);
   }
 }

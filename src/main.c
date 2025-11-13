@@ -1,16 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <lex.h>
+#include <parser.h>
 
 int main() {
-  struct token_t *tkn;
-  struct token_t *tkns;
-
-  tkns = lex("NAME=FouFou echo $NAME&&ls $HOME/.vimrc");
-  for (tkn = tkns; tkn->type != TOKEN_TYPE_EOF; ++tkn) {
-    printf_token(tkn);
-  }
-
-  free(tkns);
+  parse("echo \"Hello $USER\"");
   return EXIT_SUCCESS;
 }

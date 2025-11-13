@@ -20,8 +20,11 @@ static int echo(int argc, char **argv, char **env) {
   (void) env;
   for (i=0; i<argc-1; ++i) {
     printf("%s", (argv+1)[i]);
+    if (i+1 != argc) {
+      printf(" ");
+    }
   }
-
+  printf("\n");
   return 0;
 }
 
