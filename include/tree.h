@@ -3,6 +3,15 @@
 #include <stdlib.h>
 #include <cmd.h>
 #include <stdint.h>
+#define REDIR_IN_FLAG_FILE 4
+#define REDIR_IN_FLAG_HERE_STRING 6
+#define REDIR_IN_FLAG_HERE_DOC 5
+
+#define REDIR_OUT_FLAG_APPEND 2
+#define REDIR_OUT_FLAG_TRUNC 3
+
+#define REDIR_ERR_FLAG_APPEND 2
+#define REDIR_ERR_FLAG_TRUNC 3
 
 enum node_type_t {
   NODE_TYPE_CMD
@@ -20,7 +29,7 @@ struct redir_node_t {
   /* 100 => Redirection to `file_in` */
   /* 110 => Redirection to `here_string` */
   /* 101 => Redirection to here doc */
-  /* 111 => Redirection to here doc */
+  /* 111 => Redirection to here doc (UNUSED)*/
   flag_t in;
 
   /* Most significant 2 bits control behaviour for out and err flags */

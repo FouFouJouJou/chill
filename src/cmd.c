@@ -1,8 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <env.h>
 #include <cmd.h>
+
+flag_t set_input_options(flag_t *flag, size_t options) {
+  assert(options < (1<<INPUT_FLAG_OPTIONS_SIZE));
+  *flag |= (options << (sizeof(flag_t)*8-INPUT_FLAG_OPTIONS_SIZE));
+  return *flag;
+}
+
+flag_t set_options(flag_t *flag, size_t options) {
+  assert(options < (1<<FLAG_OPTIONS_SIZE));
+  *flag |= (options << (sizeof(flag_t)*8-FLAG_OPTIONS_SIZE));
+  return *flag;
+}
 
 flag_t flag_to_options(flag_t flag) {
   return flag >> (sizeof(flag_t)*8-FLAG_OPTIONS_SIZE);
