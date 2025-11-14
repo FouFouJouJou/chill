@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <fcntl.h>
 #include <builtin.h>
 #include <unistd.h>
@@ -9,6 +10,24 @@
 #include <tree.h>
 #include <cmd.h>
 #include <env.h>
+
+char *node_type_to_string(enum node_type_t type) {
+  switch(type) {
+  case NODE_TYPE_CMD:
+    return "NODE_TYPE_CMD";
+  case NODE_TYPE_AND:
+    return "NODE_TYPE_AND";
+  case NODE_TYPE_OR:
+    return "NODE_TYPE_OR";
+  case NODE_TYPE_REDIR:
+    return "NODE_TYPE_REDIR";
+  case NODE_TYPE_PIPE:
+    return "NODE_TYPE_PIPE";
+
+  default:
+    assert(0 && "UNREACHABLE");
+  }
+}
 
 /* TODO: make `file_name` random */
 static int read_here_string(const char *const here_string) {
@@ -73,6 +92,8 @@ static int read_here_doc(const char *const eod) {
 
   return fd;
 }
+
+
 
 static int run_cmd(const struct cmd_node_t *cmd_node) {
   int status, exit_code;
@@ -295,44 +316,6 @@ static int run_pipe_cmd(struct double_node_t *const pipe_node) {
   return EXIT_FAILURE;
 }
 
-void printf_node(const struct node_t *const node, size_t level) {
-  printf("%*c", (int)level, ' ');
-  switch(node->type) {
-  case NODE_TYPE_CMD: {
-    struct cmd_node_t *cmd_node;
-    cmd_node = (struct cmd_node_t *) node->node;
-    printf_cmd(cmd_node->cmd);
-  }
-  case NODE_TYPE_REDIR:
-    break;
-
-  default: {
-    struct double_node_t *double_node;
-    double_node = (struct double_node_t *) node->node;
-    printf("%s\n", double_node->literal);
-    printf_node(double_node->left_node, level+1);
-    printf_node(double_node->right_node, level+1);
-    break;
-  }
-  }
-}
-
-void printf_tree(const struct node_t *const node, size_t level) {
-  switch(node->type) {
-  case NODE_TYPE_CMD:
-  case NODE_TYPE_REDIR:
-    printf_node(node, level);
-    break;
-  default: {
-    struct double_node_t *double_node;
-    double_node = (struct double_node_t *) node->node;
-    printf_node(node, level);
-    printf_node(double_node->left_node, level+10);
-    printf_node(double_node->right_node, level+10);
-  }
-  }
-}
-
 int run(const struct node_t *const node) {
   switch(node->type) {
   case NODE_TYPE_CMD: {
@@ -359,5 +342,66 @@ int run(const struct node_t *const node) {
     return run_pipe_cmd((struct double_node_t *)node->node);
   default:
     exit(80);
+  }
+}
+
+/* TODO: implement redirection node printf */
+static char *node_type_symbol_to_string(enum node_type_t type) {
+  switch(type) {
+  case NODE_TYPE_AND:
+    return "&&";
+  case NODE_TYPE_OR:
+    return "||";
+  case NODE_TYPE_PIPE:
+    return "|";
+  default:
+    exit(80);
+  }
+}
+void printf_node(const struct node_t *const node, size_t level) {
+  printf("%*c", (int)level, ' ');
+  switch(node->type) {
+  case NODE_TYPE_CMD: {
+    struct cmd_node_t *cmd_node;
+    cmd_node = (struct cmd_node_t *) node->node;
+    printf_cmd(cmd_node->cmd);
+    break;
+  }
+
+  case NODE_TYPE_REDIR:
+    printf("REDIR\n");
+    break;
+
+  case NODE_TYPE_AND:
+  case NODE_TYPE_OR:
+  case NODE_TYPE_PIPE: {
+    printf("%s\n", node_type_symbol_to_string(node->type));
+    break;
+  }
+  default: {
+    assert(0 && "UNREACHABLE");
+    break;
+  }
+  }
+}
+
+void printf_tree(const struct node_t *const node, size_t level) {
+  switch(node->type) {
+  case NODE_TYPE_CMD:
+    printf_node(node, level);
+    break;
+  case NODE_TYPE_REDIR: {
+    printf_node(node, level);
+    printf_tree(((struct redir_node_t *)node->node)->node, level+PRINTF_PADDING);
+    break;
+  }
+  default: {
+    struct double_node_t *double_node;
+    double_node = (struct double_node_t *) node->node;
+    printf_node(node, level);
+    printf_tree(double_node->left_node, level+PRINTF_PADDING);
+    printf_tree(double_node->right_node, level+PRINTF_PADDING);
+    break;
+  }
   }
 }

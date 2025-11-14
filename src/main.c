@@ -3,6 +3,6 @@
 #include <parser.h>
 
 int main() {
-  parse("NAME=FOUFOU echo $NAME");
+  parse("NAME=FOUFOU echo >> out.txt $NAME");
   return EXIT_SUCCESS;
 }
