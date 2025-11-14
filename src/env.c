@@ -10,13 +10,14 @@ extern char **environ;
 
 void printf_process_env(const char **const env) {
   const char **var;
+  printf("[");
   for (var = env; *var != NULL; var++) {
     printf("%s", *var);
     if (*(var+1) != NULL) {
-      printf("; ");
+      printf(", ");
     }
   }
-  printf("\n");
+  printf("]");
 }
 
 size_t setup_env(char **cmd_env) {

@@ -60,5 +60,6 @@ struct node_t {
   void *node;
 };
 
+void printf_tree(const struct node_t *const node, size_t level);
 int run(const struct node_t *const node);
 #endif

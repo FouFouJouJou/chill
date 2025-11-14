@@ -202,7 +202,7 @@ struct node_t *parse(const char *const string) {
   struct token_list_t *tkns;
 
   tkns = lex(string);
-  run(parse_cmd(tkns));
+  printf_tree(parse_cmd(tkns), 2);
 
   free(tkns);
   return NULL;

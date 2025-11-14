@@ -43,22 +43,25 @@ flag_t input_flag_to_fd(flag_t flag) {
 
 void printf_cmd(const struct cmd_t *const cmd) {
   size_t i;
-  printf("--------------- CMD ---------------\n");
-  printf("exec: %s\n", cmd->executable);
+  printf("CMD(exec: %s, ", cmd->executable);
   printf("env: ");
   if (cmd->env[0] == NULL) {
-    printf("<empty>\n");
+    printf("<empty>, ");
   } else {
     printf_process_env((const char **const)cmd->env);
   }
 
-  printf("args: ");
+  printf(", args: ");
   if (cmd->argc == 1) {
-    printf("<empty>\n");
+    printf("<empty>, ");
   } else {
+    printf("[");
     for (i=0; i<cmd->argc; ++i) {
-      printf("%s ", cmd->argv[i]);
+      printf("%s", cmd->argv[i]);
+      if (i+1 != cmd->argc) {
+	printf(", ");
+      }
     }
-    printf("\n");
+    printf("])\n");
   }
 }

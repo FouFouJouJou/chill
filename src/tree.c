@@ -295,6 +295,44 @@ static int run_pipe_cmd(struct double_node_t *const pipe_node) {
   return EXIT_FAILURE;
 }
 
+void printf_node(const struct node_t *const node, size_t level) {
+  printf("%*c", (int)level, ' ');
+  switch(node->type) {
+  case NODE_TYPE_CMD: {
+    struct cmd_node_t *cmd_node;
+    cmd_node = (struct cmd_node_t *) node->node;
+    printf_cmd(cmd_node->cmd);
+  }
+  case NODE_TYPE_REDIR:
+    break;
+
+  default: {
+    struct double_node_t *double_node;
+    double_node = (struct double_node_t *) node->node;
+    printf("%s\n", double_node->literal);
+    printf_node(double_node->left_node, level+1);
+    printf_node(double_node->right_node, level+1);
+    break;
+  }
+  }
+}
+
+void printf_tree(const struct node_t *const node, size_t level) {
+  switch(node->type) {
+  case NODE_TYPE_CMD:
+  case NODE_TYPE_REDIR:
+    printf_node(node, level);
+    break;
+  default: {
+    struct double_node_t *double_node;
+    double_node = (struct double_node_t *) node->node;
+    printf_node(node, level);
+    printf_node(double_node->left_node, level+10);
+    printf_node(double_node->right_node, level+10);
+  }
+  }
+}
+
 int run(const struct node_t *const node) {
   switch(node->type) {
   case NODE_TYPE_CMD: {
