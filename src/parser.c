@@ -97,6 +97,14 @@ void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
     set_input_options(&node->in, REDIR_IN_FLAG_FILE);
     break;
 
+  case TOKEN_TYPE_REDIR_OUT_TRUNC:
+    YANK(tkns->current);
+    assert(is_string(tkns->current));
+    memcpy(node->file_out, tkns->current->literal, tkns->current->size);
+    node->file_out[tkns->current->size] = '\0';
+    assert(flag_to_options(node->out) == 0);
+    set_options(&node->out, REDIR_OUT_FLAG_TRUNC);
+    break;
   case TOKEN_TYPE_REDIR_OUT_APPEND:
     YANK(tkns->current);
     assert(is_string(tkns->current));
@@ -104,6 +112,23 @@ void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
     node->file_out[tkns->current->size] = '\0';
     assert(flag_to_options(node->out) == 0);
     set_options(&node->out, REDIR_OUT_FLAG_APPEND);
+    break;
+
+  case TOKEN_TYPE_REDIR_ERR_APPEND:
+    YANK(tkns->current);
+    assert(is_string(tkns->current));
+    memcpy(node->file_err, tkns->current->literal, tkns->current->size);
+    node->file_err[tkns->current->size] = '\0';
+    assert(flag_to_options(node->err) == 0);
+    set_options(&node->err, REDIR_ERR_FLAG_APPEND);
+    break;
+  case TOKEN_TYPE_REDIR_ERR_TRUNC:
+    YANK(tkns->current);
+    assert(is_string(tkns->current));
+    memcpy(node->file_err, tkns->current->literal, tkns->current->size);
+    node->file_err[tkns->current->size] = '\0';
+    assert(flag_to_options(node->err) == 0);
+    set_options(&node->err, REDIR_ERR_FLAG_TRUNC);
     break;
 
   default:

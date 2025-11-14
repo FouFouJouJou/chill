@@ -6,7 +6,6 @@
 
 typedef uint32_t flag_t;
 
-/* TODO: using env with execve does not inherit `**environ` from the shell process */
 struct cmd_t {
   char executable[1<<8];
   char *argv[1<<8];
