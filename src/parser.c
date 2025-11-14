@@ -56,7 +56,7 @@ struct node_t *parse_symbol(struct token_list_t *tkns) {
   assert(is_symbol(tkns->current));
 
   double_node = malloc(sizeof(struct double_node_t));
-  node = malloc(sizeof(struct node_t *));
+  node = malloc(sizeof(struct node_t));
 
   node->type = token_symbol_type_to_node_type(tkns->current->type);
   node->node = (void*) node;
@@ -180,9 +180,13 @@ struct node_t *parse_cmd(struct token_list_t *tkns) {
 
       parse_redir(tkns, redir_node);
 
-    } else {
+    }
+    else if (is_string(tkns->current)){
       cmd->argv[cmd->argc++] = tkns->current->literal;
       YANK(tkns->current);
+    }
+    else {
+      break;
     }
   }
   cmd->argv[cmd->argc] = NULL;
@@ -202,7 +206,7 @@ struct node_t *parse(const char *const string) {
   struct token_list_t *tkns;
 
   tkns = lex(string);
-  printf_tree(parse_cmd(tkns), 2);
+  printf_tree(parse_cmd(tkns), 1);
 
   free(tkns);
   return NULL;
