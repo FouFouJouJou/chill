@@ -3,6 +3,8 @@
 #include <parser.h>
 
 int main() {
-  parse("NAME=FouFou SURNAME=JouJou echo >> out.txt $NAME && echo hello");
+  struct node_t *node = parse("cd /home/fuji && /usr/bin/ls");
+  printf_tree(node, 0);
+  run(node);
   return EXIT_SUCCESS;
 }

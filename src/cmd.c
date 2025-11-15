@@ -51,9 +51,9 @@ void printf_cmd(const struct cmd_t *const cmd) {
     printf_process_env((const char **const)cmd->env);
   }
 
-  printf(", args: ");
+  printf(" args: ");
   if (cmd->argc == 1) {
-    printf("<empty>, ");
+    printf("<empty>");
   } else {
     printf("[");
     for (i=0; i<cmd->argc; ++i) {
@@ -62,6 +62,6 @@ void printf_cmd(const struct cmd_t *const cmd) {
 	printf(", ");
       }
     }
-    printf("])\n");
   }
+  printf("])\n");
 }

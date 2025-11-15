@@ -13,7 +13,7 @@
 #define REDIR_ERR_FLAG_APPEND 2
 #define REDIR_ERR_FLAG_TRUNC 3
 
-#define PRINTF_PADDING 2
+#define PRINTF_PADDING 5
 
 enum node_type_t {
   NODE_TYPE_CMD
@@ -24,7 +24,7 @@ enum node_type_t {
 };
 
 /* Redirection flag: 00000000000000000000000000000000. */
-/* MSB indicates if redirection is on or off. */
+/* MSB indicates if redirection is set or not. */
 struct redir_node_t {
   /* Most significant 3 bits control behaviour for in flags */
   /* 000 => No redirection */

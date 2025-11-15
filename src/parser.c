@@ -5,10 +5,10 @@
 #include <parser.h>
 #include <tree.h>
 
-#define YANK(x) ++x
+#define YANK(x) ++(x->current)
 #define TOKEN_IS(tkn, t) assert((tkn)->type == t)
 
-static enum node_type_t token_symbol_type_to_node_type(enum token_type_t token_type) {
+static enum node_type_t token_operator_type_to_node_type(enum token_type_t token_type) {
   switch(token_type) {
   case TOKEN_TYPE_AND:
     return NODE_TYPE_AND;
@@ -40,40 +40,22 @@ static int is_string(const struct token_t *const tkn) {
     || tkn->type == TOKEN_TYPE_SINGLEQ_STRING;
 }
 
-static int is_symbol(const struct token_t *const tkn) {
-  return !is_string(tkn);
+static int is_operator(const struct token_t *const tkn) {
+  return tkn->type == TOKEN_TYPE_AND
+    || tkn->type == TOKEN_TYPE_OR
+    || tkn->type == TOKEN_TYPE_PIPE;
 }
 
 static int is_env_string(const struct token_list_t *const tkn) {
-  assert(tkn->current->type == TOKEN_TYPE_RAW_STRING);
-  return strchr(tkn->current->literal, '=') != NULL;
+  return tkn->current->type == TOKEN_TYPE_RAW_STRING && strchr(tkn->current->literal, '=') != NULL;
 }
 
-struct node_t *parse_symbol(struct token_list_t *tkns) {
-  struct double_node_t *double_node;
-  struct node_t *node;
-
-  assert(is_symbol(tkns->current));
-
-  double_node = malloc(sizeof(struct double_node_t));
-  node = malloc(sizeof(struct node_t));
-
-  node->type = token_symbol_type_to_node_type(tkns->current->type);
-  node->node = (void*) node;
-
-  double_node->left_node = NULL;
-  double_node->right_node = NULL;
-
-  YANK(tkns->current);
-
-  return node;
-}
 
 void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
   assert(is_redir(tkns->current));
   switch(tkns->current->type) {
   case TOKEN_TYPE_REDIR_IN_HERE_DOC:
-    YANK(tkns->current);
+    YANK(tkns);
     assert(is_string(tkns->current));
     memcpy(node->eod, tkns->current, tkns->current->size);
     node->file_in[tkns->current->size] = '\0';
@@ -81,7 +63,7 @@ void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
     set_input_options(&node->in, REDIR_IN_FLAG_HERE_DOC);
     break;
   case TOKEN_TYPE_REDIR_IN_HERE_STRING:
-    YANK(tkns->current);
+    YANK(tkns);
     assert(is_string(tkns->current));
     memcpy(node->here_string, tkns->current, tkns->current->size);
     node->file_in[tkns->current->size] = '\0';
@@ -89,7 +71,7 @@ void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
     set_input_options(&node->in, REDIR_IN_FLAG_HERE_STRING);
     break;
   case TOKEN_TYPE_REDIR_IN_FILE:
-    YANK(tkns->current);
+    YANK(tkns);
     assert(is_string(tkns->current));
     memcpy(node->file_in, tkns->current, tkns->current->size);
     node->file_in[tkns->current->size] = '\0';
@@ -98,7 +80,7 @@ void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
     break;
 
   case TOKEN_TYPE_REDIR_OUT_TRUNC:
-    YANK(tkns->current);
+    YANK(tkns);
     assert(is_string(tkns->current));
     memcpy(node->file_out, tkns->current->literal, tkns->current->size);
     node->file_out[tkns->current->size] = '\0';
@@ -106,7 +88,7 @@ void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
     set_options(&node->out, REDIR_OUT_FLAG_TRUNC);
     break;
   case TOKEN_TYPE_REDIR_OUT_APPEND:
-    YANK(tkns->current);
+    YANK(tkns);
     assert(is_string(tkns->current));
     memcpy(node->file_out, tkns->current->literal, tkns->current->size);
     node->file_out[tkns->current->size] = '\0';
@@ -115,7 +97,7 @@ void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
     break;
 
   case TOKEN_TYPE_REDIR_ERR_APPEND:
-    YANK(tkns->current);
+    YANK(tkns);
     assert(is_string(tkns->current));
     memcpy(node->file_err, tkns->current->literal, tkns->current->size);
     node->file_err[tkns->current->size] = '\0';
@@ -123,7 +105,7 @@ void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
     set_options(&node->err, REDIR_ERR_FLAG_APPEND);
     break;
   case TOKEN_TYPE_REDIR_ERR_TRUNC:
-    YANK(tkns->current);
+    YANK(tkns);
     assert(is_string(tkns->current));
     memcpy(node->file_err, tkns->current->literal, tkns->current->size);
     node->file_err[tkns->current->size] = '\0';
@@ -134,7 +116,7 @@ void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
   default:
     assert(0 && "UNREACHABLE");
   }
-  YANK(tkns->current);
+  YANK(tkns);
 }
 
 struct node_t *parse_cmd(struct token_list_t *tkns) {
@@ -161,7 +143,7 @@ struct node_t *parse_cmd(struct token_list_t *tkns) {
   if (is_env_string(tkns)) {
     while(is_env_string(tkns)) {
       cmd->env[total_env++] = tkns->current->literal;
-      YANK(tkns->current);
+      YANK(tkns);
     }
   }
   cmd->env[total_env] = NULL;
@@ -170,9 +152,9 @@ struct node_t *parse_cmd(struct token_list_t *tkns) {
   memcpy(cmd->executable, tkns->current->literal, tkns->current->size);
   cmd->executable[tkns->current->size] = '\0';
   cmd->argv[cmd->argc++] = cmd->executable;
-  YANK(tkns->current);
+  YANK(tkns);
 
-  while (tkns->current->type != TOKEN_TYPE_EOF) {
+  while (is_string(tkns->current) || is_redir(tkns->current)) {
     if (is_redir(tkns->current)) {
       if (redir_node == NULL) {
 	redir_node = malloc(sizeof(struct redir_node_t));
@@ -183,7 +165,7 @@ struct node_t *parse_cmd(struct token_list_t *tkns) {
     }
     else if (is_string(tkns->current)){
       cmd->argv[cmd->argc++] = tkns->current->literal;
-      YANK(tkns->current);
+      YANK(tkns);
     }
     else {
       break;
@@ -202,12 +184,74 @@ struct node_t *parse_cmd(struct token_list_t *tkns) {
   return node;
 }
 
+struct node_t *parse_operator(struct token_list_t *tkns) {
+  struct double_node_t *double_node;
+  struct node_t *node;
+
+  assert(is_operator(tkns->current));
+
+  double_node = malloc(sizeof(struct double_node_t));
+  node = malloc(sizeof(struct node_t));
+
+  node->type = token_operator_type_to_node_type(tkns->current->type);
+  node->node = (void*) double_node;
+
+  double_node->left_node = NULL;
+  double_node->right_node = NULL;
+
+  YANK(tkns);
+  return node;
+}
 struct node_t *parse(const char *const string) {
   struct token_list_t *tkns;
+  struct node_t *op_stack[10];
+  struct node_t *cmd_stack[10];
+  int op_stack_idx, cmd_stack_idx, i, k;
 
+  op_stack_idx = 0;
+  cmd_stack_idx = 0;
   tkns = lex(string);
-  printf_tree(parse_cmd(tkns), 1);
+  while (tkns->current->type != TOKEN_TYPE_EOF) {
+    struct node_t *cmd_node;
+    struct node_t *op_node;
+    if (is_operator(tkns->current)) {
+      op_node = parse_operator(tkns);
+      op_stack[op_stack_idx++] = op_node;
+    }
+
+    cmd_node = parse_cmd(tkns);
+    cmd_stack[cmd_stack_idx++] = cmd_node;
+  }
+
+  assert(op_stack_idx + 1 == cmd_stack_idx);
+  printf("%d ops, %d cmds\n", op_stack_idx, cmd_stack_idx);
+
+  k=2;
+  for (i=0; i<op_stack_idx; ++i) {
+    struct node_t *op_node;
+    struct double_node_t *double_node;
+
+    op_node = op_stack[i];
+    double_node = (struct double_node_t *)(op_node->node);
+    if (i == 0) {
+      struct node_t *cmd_node_1;
+      struct node_t *cmd_node_2;
+      cmd_node_1 = cmd_stack[0];
+      cmd_node_2 = cmd_stack[1];
+
+      double_node->left_node = cmd_node_1;
+      double_node->right_node = cmd_node_2;
+    }
+    else {
+      double_node->left_node = op_stack[i-1];
+      double_node->right_node = cmd_stack[k++];
+    }
+  }
 
   free(tkns);
-  return NULL;
+  if (op_stack_idx == 0) {
+    assert(cmd_stack_idx == 1);
+    return cmd_stack[0];
+  }
+  return op_stack[op_stack_idx-1];
 }

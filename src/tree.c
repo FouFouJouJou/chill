@@ -104,7 +104,7 @@ static int run_cmd(const struct cmd_node_t *cmd_node) {
     struct cmd_t *cmd = cmd_node->cmd;
     exit_code = execve(cmd->executable, cmd->argv, cmd->env);
     if (exit_code == -1) {
-      perror("run_cmd: error");
+      fprintf(stderr, "run_cmd: error\n");
       exit(errno);
     }
   }
