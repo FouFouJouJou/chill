@@ -185,19 +185,16 @@ struct node_t *parse_cmd(struct token_list_t *tkns) {
 }
 
 struct node_t *parse_operator(struct token_list_t *tkns) {
-  struct double_node_t *double_node;
   struct node_t *node;
 
   assert(is_operator(tkns->current));
 
-  double_node = malloc(sizeof(struct double_node_t));
   node = malloc(sizeof(struct node_t));
 
   node->type = token_operator_type_to_node_type(tkns->current->type);
-  node->node = (void*) double_node;
 
-  double_node->left_node = NULL;
-  double_node->right_node = NULL;
+  node->left_node = NULL;
+  node->right_node = NULL;
 
   YANK(tkns);
   return node;
@@ -229,22 +226,20 @@ struct node_t *parse(const char *const string) {
   k=2;
   for (i=0; i<op_stack_idx; ++i) {
     struct node_t *op_node;
-    struct double_node_t *double_node;
 
     op_node = op_stack[i];
-    double_node = (struct double_node_t *)(op_node->node);
     if (i == 0) {
       struct node_t *cmd_node_1;
       struct node_t *cmd_node_2;
       cmd_node_1 = cmd_stack[0];
       cmd_node_2 = cmd_stack[1];
 
-      double_node->left_node = cmd_node_1;
-      double_node->right_node = cmd_node_2;
+      op_node->left_node = cmd_node_1;
+      op_node->right_node = cmd_node_2;
     }
     else {
-      double_node->left_node = op_stack[i-1];
-      double_node->right_node = cmd_stack[k++];
+      op_node->left_node = op_stack[i-1];
+      op_node->right_node = cmd_stack[k++];
     }
   }
 

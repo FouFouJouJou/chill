@@ -117,7 +117,7 @@ static int run_cmd(const struct cmd_node_t *cmd_node) {
   return EXIT_FAILURE;
 }
 
-static int run_and_cmd(const struct double_node_t *and_node) {
+static int run_and_cmd(const struct node_t *and_node) {
   int status1, status2;
 
   status1 = run(and_node->left_node);
@@ -130,7 +130,7 @@ static int run_and_cmd(const struct double_node_t *and_node) {
   return status2;
 }
 
-static int run_or_cmd(const struct double_node_t *or_node) {
+static int run_or_cmd(const struct node_t *or_node) {
   int status1, status2;
 
   status1 = run(or_node->left_node);
@@ -260,7 +260,7 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
   return EXIT_FAILURE;
 }
 
-static int run_pipe_cmd(struct double_node_t *const pipe_node) {
+static int run_pipe_cmd(const struct node_t *pipe_node) {
   pid_t pid_1, pid_2;
   int fds[2];
   int status_1;
@@ -333,13 +333,13 @@ int run(const struct node_t *const node) {
     return run_cmd(cmd_node);
   }
   case NODE_TYPE_AND:
-    return run_and_cmd((struct double_node_t*)node->node);
+    return run_and_cmd(node);
   case NODE_TYPE_OR:
-    return run_or_cmd((struct double_node_t*)node->node);
+    return run_or_cmd(node);
   case NODE_TYPE_REDIR:
     return run_redir_cmd((struct redir_node_t *)node->node);
   case NODE_TYPE_PIPE:
-    return run_pipe_cmd((struct double_node_t *)node->node);
+    return run_pipe_cmd(node);
   default:
     exit(80);
   }
@@ -386,21 +386,25 @@ void printf_node(const struct node_t *const node, size_t level) {
 }
 
 void printf_tree(const struct node_t *const node, size_t level) {
+  printf("%*c", (int)level, ' ');
   switch(node->type) {
-  case NODE_TYPE_CMD:
-    printf_node(node, level);
+  case NODE_TYPE_CMD: {
+    struct cmd_node_t *cmd_node;
+    cmd_node = (struct cmd_node_t *) node->node;
+    printf_cmd(cmd_node->cmd);
     break;
+  }
   case NODE_TYPE_REDIR: {
-    printf_node(node, level);
-    printf_tree(((struct redir_node_t *)node->node)->node, level+PRINTF_PADDING);
+    struct redir_node_t *redir_node = (struct redir_node_t *)node->node;
+    /* TODO: printf_redir(redir_node); */
+    printf("REDIR\n");
+    printf_tree(redir_node->node, level+PRINTF_PADDING);
     break;
   }
   default: {
-    struct double_node_t *double_node;
-    double_node = (struct double_node_t *) node->node;
     printf_node(node, level);
-    printf_tree(double_node->left_node, level+PRINTF_PADDING);
-    printf_tree(double_node->right_node, level+PRINTF_PADDING);
+    printf_tree(node->left_node, level+PRINTF_PADDING);
+    printf_tree(node->right_node, level+PRINTF_PADDING);
     break;
   }
   }

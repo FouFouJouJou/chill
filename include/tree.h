@@ -52,13 +52,10 @@ struct cmd_node_t {
   struct cmd_t *cmd;
 };
 
-struct double_node_t {
-  struct node_t *left_node;
-  struct node_t *right_node;
-};
-
 struct node_t {
   enum node_type_t type;
+  void *left_node;
+  void *right_node;
   void *node;
 };
 
