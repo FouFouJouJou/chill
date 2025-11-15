@@ -57,8 +57,8 @@ void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
   case TOKEN_TYPE_REDIR_IN_HERE_DOC:
     YANK(tkns);
     assert(is_string(tkns->current));
-    memcpy(node->eod, tkns->current, tkns->current->size);
-    node->file_in[tkns->current->size] = '\0';
+    memcpy(node->eod, tkns->current->literal, tkns->current->size);
+    node->eod[tkns->current->size] = '\0';
     assert(input_flag_to_options(node->in) == 0);
     set_input_options(&node->in, REDIR_IN_FLAG_HERE_DOC);
     break;
@@ -190,7 +190,6 @@ struct node_t *parse_operator(struct token_list_t *tkns) {
   assert(is_operator(tkns->current));
 
   node = malloc(sizeof(struct node_t));
-
   node->type = token_operator_type_to_node_type(tkns->current->type);
 
   node->left_node = NULL;

@@ -23,6 +23,7 @@ enum node_type_t {
   , NODE_TYPE_PIPE
 };
 
+/* TODO: implement a proper `redir_node_t` API to get information quicker */
 /* Redirection flag: 00000000000000000000000000000000. */
 /* MSB indicates if redirection is set or not. */
 struct redir_node_t {

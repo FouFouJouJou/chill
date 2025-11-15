@@ -59,7 +59,7 @@ static int read_here_doc(const char *const eod) {
   eod_len = strlen(eod);
   fd = open(file_name, O_CREAT|O_RDWR|O_TRUNC, 0644);
   if (fd == -1) {
-    perror("Error opening input file");
+    fprintf(stderr, "Error opening input file\n");
     exit(errno);
   }
 
@@ -221,7 +221,7 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
 
   if (pid == 0) {
     if (in_redir) {
-      if(dup2(flag_to_fd(redir_node->in), STDIN_FILENO) == -1) {
+      if(dup2(input_flag_to_fd(redir_node->in), STDIN_FILENO) == -1) {
 	perror("dup2 failed");
 	exit(errno);
       }
@@ -358,31 +358,62 @@ static char *node_type_symbol_to_string(enum node_type_t type) {
     exit(80);
   }
 }
-void printf_node(const struct node_t *const node, size_t level) {
-  printf("%*c", (int)level, ' ');
-  switch(node->type) {
-  case NODE_TYPE_CMD: {
-    struct cmd_node_t *cmd_node;
-    cmd_node = (struct cmd_node_t *) node->node;
-    printf_cmd(cmd_node->cmd);
-    break;
+
+void printf_redir(struct redir_node_t *redir_node) {
+  flag_t in_options;
+  flag_t out_options;
+  flag_t err_options;
+
+  int in_redir;
+  int out_redir;
+  int err_redir;
+
+  in_options = input_flag_to_options(redir_node->in);
+  out_options = flag_to_options(redir_node->out);
+  err_options = flag_to_options(redir_node->err);
+
+  in_redir = in_options >> (INPUT_FLAG_OPTIONS_SIZE-1) == 1;
+  out_redir = out_options >> (FLAG_OPTIONS_SIZE-1) == 1;
+  err_redir = err_options >> (FLAG_OPTIONS_SIZE-1) == 1;
+
+  printf("REDIR: ");
+
+  if (in_redir) {
+    switch (in_options) {
+    case REDIR_IN_FLAG_FILE:
+      printf("(< %s)", redir_node->file_in);
+      break;
+    case REDIR_IN_FLAG_HERE_DOC:
+      printf("(<< %s)", redir_node->eod);
+      break;
+    case REDIR_IN_FLAG_HERE_STRING:
+      printf("(<<< %s)", redir_node->here_string);
+      break;
+    }
   }
 
-  case NODE_TYPE_REDIR:
-    printf("REDIR\n");
-    break;
+  if (out_redir) {
+    switch (out_options) {
+    case REDIR_OUT_FLAG_APPEND:
+      printf("(>> %s)", redir_node->file_out);
+      break;
+    case REDIR_OUT_FLAG_TRUNC:
+      printf("(> %s)", redir_node->file_out);
+      break;
+    }
+  }
 
-  case NODE_TYPE_AND:
-  case NODE_TYPE_OR:
-  case NODE_TYPE_PIPE: {
-    printf("%s\n", node_type_symbol_to_string(node->type));
-    break;
+  if (err_redir) {
+    switch (err_options) {
+    case REDIR_ERR_FLAG_APPEND:
+      printf("(>> %s)", redir_node->file_err);
+      break;
+    case REDIR_ERR_FLAG_TRUNC:
+      printf("(> %s)", redir_node->file_err);
+      break;
+    }
   }
-  default: {
-    assert(0 && "UNREACHABLE");
-    break;
-  }
-  }
+  printf("\n");
 }
 
 void printf_tree(const struct node_t *const node, size_t level) {
@@ -397,12 +428,12 @@ void printf_tree(const struct node_t *const node, size_t level) {
   case NODE_TYPE_REDIR: {
     struct redir_node_t *redir_node = (struct redir_node_t *)node->node;
     /* TODO: printf_redir(redir_node); */
-    printf("REDIR\n");
+    printf_redir(redir_node);
     printf_tree(redir_node->node, level+PRINTF_PADDING);
     break;
   }
   default: {
-    printf_node(node, level);
+    printf("%s\n", node_type_symbol_to_string(node->type));
     printf_tree(node->left_node, level+PRINTF_PADDING);
     printf_tree(node->right_node, level+PRINTF_PADDING);
     break;
