@@ -117,7 +117,6 @@ struct token_list_t *lex(const char *const input) {
   struct token_list_t *result;
   struct token_t *tkns;
   struct tknzr_t tknzrs[1<<4];
-  struct token_t *tkn;
   const char *input_ptr;
   size_t i;
   size_t total_tknzrs;
@@ -143,6 +142,9 @@ struct token_list_t *lex(const char *const input) {
   append_tknzr(tknzrs,"<", TOKEN_TYPE_REDIR_IN_FILE, &total_tknzrs);
 
   while (*input_ptr != '\0') {
+    struct token_t *tkn;
+
+    tkn = NULL;
     input_ptr += strspn(input_ptr, " ");
     for (i=0; i<total_tknzrs; ++i) {
       if ((tkn = symbol_tknzr(input_ptr, tknzrs+i)) != NULL) {
@@ -155,7 +157,6 @@ struct token_list_t *lex(const char *const input) {
     total_tkns+=1;
     tkns[total_tkns-1] = *tkn;
     input_ptr += tkn->size;
-    printf_token(tkn);
     free(tkn);
   }
 
@@ -164,4 +165,16 @@ struct token_list_t *lex(const char *const input) {
   result->head = tkns;
   result->current = tkns;
   return result;
+}
+
+void free_token_list(struct token_list_t *list) {
+  struct token_t *current;
+  current = list->head;
+  while (list->current->type != TOKEN_TYPE_EOF) {
+    current = list->current;
+    free(current);
+    list->current += 1;
+  }
+
+  free(list);
 }

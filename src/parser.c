@@ -219,6 +219,8 @@ struct node_t *parse(const char *const string) {
     cmd_stack[cmd_stack_idx++] = cmd_node;
   }
 
+  free_token_list(tkns);
+
   assert(op_stack_idx + 1 == cmd_stack_idx);
   printf("%d ops, %d cmds\n", op_stack_idx, cmd_stack_idx);
 
@@ -242,7 +244,6 @@ struct node_t *parse(const char *const string) {
     }
   }
 
-  free(tkns);
   if (op_stack_idx == 0) {
     assert(cmd_stack_idx == 1);
     return cmd_stack[0];

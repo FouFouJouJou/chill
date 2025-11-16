@@ -41,5 +41,6 @@ typedef struct token_t *(*tknzr_fn)(const char *const string, const struct tknzr
 void printf_token(const struct token_t *const token);
 const char *token_type_to_string(enum token_type_t type);
 struct token_list_t *lex(const char *const input);
+void free_token_list(struct token_list_t *list);
 
 #endif

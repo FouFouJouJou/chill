@@ -23,5 +23,4 @@ flag_t flag_to_options(flag_t flag);
 flag_t flag_to_fd(flag_t flag);
 flag_t input_flag_to_options(flag_t flag);
 flag_t input_flag_to_fd(flag_t flag);
-void printf_cmd(const struct cmd_t *const cmd);
 #endif
