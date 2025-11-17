@@ -6,10 +6,11 @@
 #include <env.h>
 #include <cmd.h>
 #include <prompt.h>
+#include <history.h>
 
 extern int exit_code;
 
-int main() {
+void run_() {
   char string[1<<8];
 
   while (1) {
@@ -23,6 +24,11 @@ int main() {
     memset(string, 0, sizeof(string));
     free_tree(node);
   }
+}
 
+int main() {
+  struct history_t history = init_history();
+  read_history(&history);
+  printf_history(history);
   return EXIT_SUCCESS;
 }

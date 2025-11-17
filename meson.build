@@ -8,6 +8,7 @@ project(
 incdir = include_directories('include')
 
 sources = files(
+  'src/history.c',
   'src/prompt.c',
   'src/lex.c',
   'src/parser.c',
