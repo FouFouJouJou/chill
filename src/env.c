@@ -167,6 +167,23 @@ int extract_vars(char *string, char *vars[]) {
 
 /* $? */
 /* ls -> /usr/bin/ls */
+static char *evaluate_special_env_value(char *key, char **env) {
+  char *value;
+  (void) env;
+  if (!strncmp(key, "$", 1)) {
+    value = malloc(sizeof(char)*3);
+    sprintf(value, "%d", getpid());
+    return value;
+  }
+
+  if (!strncmp(key, "?", 1)) {
+    value = malloc(sizeof(char)*3);
+    sprintf(value, "%d", exit_code);
+    return value;
+  }
+
+  return NULL;
+}
 
 char *evaluate_env_value(char *key, int argc, char **argv, char **env) {
   char **env_var;
@@ -174,9 +191,7 @@ char *evaluate_env_value(char *key, int argc, char **argv, char **env) {
   (void) argc;
   (void) argv;
 
-  if (!strncmp(key, "?", 1)) {
-    value = malloc(sizeof(char)*3);
-    sprintf(value, "%d", exit_code);
+  if ((value = evaluate_special_env_value(key, env)) != NULL) {
     return value;
   }
 
