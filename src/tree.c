@@ -11,6 +11,8 @@
 #include <cmd.h>
 #include <env.h>
 
+int exit_code;
+
 char *node_type_to_string(enum node_type_t type) {
   switch (type) {
   case NODE_TYPE_CMD:
@@ -92,8 +94,6 @@ static int read_here_doc(const char *const eod) {
 
   return fd;
 }
-
-
 
 static int run_cmd(const struct cmd_node_t *cmd_node) {
   int status, exit_code;
@@ -327,6 +327,7 @@ int run(const struct node_t *const node) {
     setup_env(cmd_node->cmd->env);
     evaluate(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
     memcpy(cmd_node->cmd->executable, cmd_node->cmd->argv[0], strlen(cmd_node->cmd->argv[0]));
+    cmd_node->cmd->argv[strlen(cmd_node->cmd->argv[0])] = '\0';
     fn = cmd_to_builtin(cmd_node->cmd->executable);
     if (fn != NULL) {
       return fn(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
@@ -339,6 +340,7 @@ int run(const struct node_t *const node) {
     }
     if (executable_path != cmd_node->cmd->executable) {
       memcpy(cmd_node->cmd->executable, executable_path, strlen(executable_path));
+      cmd_node->cmd->executable[strlen(executable_path)] = '\0';
       free(executable_path);
     }
 

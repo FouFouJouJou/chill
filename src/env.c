@@ -7,6 +7,7 @@
 #include <ctype.h>
 
 extern char **environ;
+extern int exit_code;
 
 void printf_process_env(const char **const env) {
   const char **var;
@@ -119,11 +120,11 @@ int var_len(char *const string) {
   assert(*string_p == '$');
   var_name = string_p+1;
 
-  if (*var_name == '\0' || (!isalnum(*var_name) && *var_name != '$' && *var_name != '_')) {
+  if (*var_name == '\0' || (!isalnum(*var_name) && *var_name != '$' && *var_name != '_' && *var_name != '?')) {
     return -1;
   }
 
-  if (*var_name == '$' || isdigit(*var_name)) {
+  if (*var_name == '$' || isdigit(*var_name) || *var_name == '?') {
     return 2;
   }
 
@@ -134,6 +135,7 @@ int var_len(char *const string) {
   return var_name - string_p;
 }
 
+/* returns list of variables in `string`, each element is in the `$var_name` format */
 int extract_vars(char *string, char *vars[]) {
   char *string_p;
   char *var;
@@ -163,11 +165,20 @@ int extract_vars(char *string, char *vars[]) {
   return total;
 }
 
+/* $? */
+/* ls -> /usr/bin/ls */
+
 char *evaluate_env_value(char *key, int argc, char **argv, char **env) {
   char **env_var;
   char *value;
   (void) argc;
   (void) argv;
+
+  if (!strncmp(key, "?", 1)) {
+    value = malloc(sizeof(char)*3);
+    sprintf(value, "%d", exit_code);
+    return value;
+  }
 
   for (env_var = env; *env_var != NULL; ++env_var) {
     if (!strncmp(key, *env_var, strlen(key))) {
@@ -213,6 +224,7 @@ void evaluate(int argc, char **const argv, char **env) {
     }
     else {
       memcpy(argv[i], eval_arg, strlen(eval_arg));
+      argv[i][strlen(eval_arg)] = '\0';
       free(eval_arg);
     }
   }

@@ -1,13 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <parser.h>
 #include <lex.h>
+#include <env.h>
 #include <cmd.h>
 #include <prompt.h>
 
+extern int exit_code;
+
 int main() {
   char string[1<<8];
-  int exit_code;
 
   while (1) {
     struct node_t *node;
@@ -17,7 +20,7 @@ int main() {
     printf_tree(node, 0);
 #endif
     exit_code = run(node);
-    printf("exit_code: %d\n", exit_code);
+    memset(string, 0, sizeof(string));
     free_tree(node);
   }
 

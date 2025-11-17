@@ -97,9 +97,6 @@ char *which_(const char *const cmd, const char **env) {
 static int which(size_t argc, char **argv, char **env) {
   char *path;
   (void) argc;
-  (void) argv;
-
-  /* TODO: check if `argv[1]` is already a valid executable path */
 
   path = which_(argv[1], (const char **)env);
   if (path == NULL) {
