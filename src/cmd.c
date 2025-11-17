@@ -51,7 +51,7 @@ void printf_cmd(const struct cmd_t *const cmd) {
     printf_process_env((const char **const)cmd->env);
   }
 
-  printf("argc: %ld, ", cmd->argc);
+  printf(", argc: %ld, ", cmd->argc);
   printf("args: ");
   if (cmd->argc == 0) {
     printf("<empty>");

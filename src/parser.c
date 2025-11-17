@@ -222,7 +222,9 @@ struct node_t *parse(const char *const string) {
   free_token_list(tkns);
 
   assert(op_stack_idx + 1 == cmd_stack_idx);
+#ifdef DEBUG
   printf("%d ops, %d cmds\n", op_stack_idx, cmd_stack_idx);
+#endif
 
   k=2;
   for (i=0; i<op_stack_idx; ++i) {

@@ -5,9 +5,11 @@
 #include <cmd.h>
 
 int main() {
-  char *string = "/bin/ls $dir";
+  char *string = "dir=/Users/foufou /bin/ls $dir";
   struct node_t *node = parse(string);
+#ifdef DEBUG
   printf_tree(node, 0);
+#endif
   run(node);
   free_tree(node);
 

@@ -91,7 +91,7 @@ char* replace(char* string, const char* substr, const char* new_str) {
 
   result = (char*)malloc(i + count * abs(new_len - old_len) + 1);
   if (result == NULL) {
-    printf("%d %d\n", new_len, old_len);
+    fprintf(stderr, "%d %d\n", new_len, old_len);
     perror("memory allocation failed\n");
     exit(EXIT_FAILURE);
   }
