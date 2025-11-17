@@ -151,7 +151,7 @@ int extract_vars(char *string, char *vars[]) {
     char *v;
     var_l = var_len(var);
     if (var_l == -1) {
-      printf("var: $\n");
+      /* printf("var: $\n"); */
       string_p = var+1;
       continue;
     }
