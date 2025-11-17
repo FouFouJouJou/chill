@@ -179,6 +179,7 @@ char *evaluate_env_value(char *key, int argc, char **argv, char **env) {
   return NULL;
 }
 
+/* TODO: fix echo "hello world $name" bug */
 void evaluate(int argc, char **const argv, char **env) {
   char *arg;
   char *old_arg;

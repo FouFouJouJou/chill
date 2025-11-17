@@ -73,9 +73,20 @@ static char *which__(const char *const cmd, const char *path) {
   return NULL;
 }
 
+static int is_executable(const char *const filepath) {
+  if (access(filepath, F_OK | X_OK) == 0) {
+    printf("File '%s' exists and is executable.\n", filepath);
+    return 1;
+  }
+  return errno;
+}
+
 char *which_(const char *const cmd, const char **env) {
   char *env_path;
   char *path;
+  if (!is_executable(cmd)) {
+    return NULL;
+  }
   env_path = get_path((char **)env);
   assert(env_path != NULL);
   path = which__(cmd, env_path);
@@ -88,7 +99,7 @@ static int which(size_t argc, char **argv, char **env) {
   (void) argc;
   (void) argv;
 
- /* TODO: check if `argv[1]` is already a valid executable path */
+  /* TODO: check if `argv[1]` is already a valid executable path */
 
   path = which_(argv[1], (const char **)env);
   if (path == NULL) {
