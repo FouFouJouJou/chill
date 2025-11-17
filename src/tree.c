@@ -319,6 +319,7 @@ static int run_pipe_cmd(const struct node_t *pipe_node) {
 int run(const struct node_t *const node) {
   switch (node->type) {
   case NODE_TYPE_CMD: {
+    char *executable_path;
     builtin_t fn;
     struct cmd_node_t *cmd_node;
 
@@ -330,6 +331,17 @@ int run(const struct node_t *const node) {
     if (fn != NULL) {
       return fn(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
     }
+
+    executable_path=which_(cmd_node->cmd->executable, (const char **)cmd_node->cmd->env);
+    if (executable_path == NULL) {
+      fprintf(stderr, "chill: command not found: %s\n", cmd_node->cmd->executable);
+      return 1;
+    }
+    if (executable_path != cmd_node->cmd->executable) {
+      memcpy(cmd_node->cmd->executable, executable_path, strlen(executable_path));
+      free(executable_path);
+    }
+
     return run_cmd(cmd_node);
   }
   case NODE_TYPE_AND:
