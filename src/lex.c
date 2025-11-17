@@ -157,6 +157,9 @@ struct token_list_t *lex(const char *const input) {
     total_tkns+=1;
     tkns[total_tkns-1] = *tkn;
     input_ptr += tkn->size;
+#ifdef DEBUG
+    printf_token(tkn);
+#endif
     free(tkn);
   }
 

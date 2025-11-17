@@ -17,7 +17,7 @@ void printf_process_env(const char **const env) {
       printf(", ");
     }
   }
-  printf("]");
+  printf("], ");
 }
 
 size_t setup_env(char **cmd_env) {
