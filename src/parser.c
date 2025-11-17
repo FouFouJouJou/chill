@@ -9,7 +9,7 @@
 #define TOKEN_IS(tkn, t) assert((tkn)->type == t)
 
 static enum node_type_t token_operator_type_to_node_type(enum token_type_t token_type) {
-  switch(token_type) {
+  switch (token_type) {
   case TOKEN_TYPE_AND:
     return NODE_TYPE_AND;
   case TOKEN_TYPE_PIPE:
@@ -53,7 +53,7 @@ static int is_env_string(const struct token_list_t *const tkn) {
 
 void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
   assert(is_redir(tkns->current));
-  switch(tkns->current->type) {
+  switch (tkns->current->type) {
   case TOKEN_TYPE_REDIR_IN_HERE_DOC:
     YANK(tkns);
     assert(is_string(tkns->current));

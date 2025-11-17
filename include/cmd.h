@@ -16,6 +16,7 @@ struct cmd_t {
 
 struct cmd_t *make_cmd(char executable[1<<8], char *argv[1<<8], size_t argc, char *env[1<<8]);
 void printf_cmd(const struct cmd_t *const cmd);
+void free_cmd(struct cmd_t *cmd);
 
 flag_t set_input_options(flag_t *flag, size_t options);
 flag_t set_options(flag_t *flag, size_t options);

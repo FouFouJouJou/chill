@@ -67,3 +67,7 @@ void printf_cmd(const struct cmd_t *const cmd) {
   }
   printf(")\n");
 }
+
+void free_cmd(struct cmd_t *cmd) {
+  free(cmd);
+}

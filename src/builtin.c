@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <builtin.h>
+/* TODO: implement which to locate executables */
 
 static int cd(int argc, char **argv, char **env) {
   (void) env;

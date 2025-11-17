@@ -62,6 +62,7 @@ struct node_t {
 
 void printf_tree(const struct node_t *const node, size_t level);
 char *node_type_to_string(enum node_type_t type);
+void free_tree(struct node_t *head);
 int run(const struct node_t *const node);
 
 #endif

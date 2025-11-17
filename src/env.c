@@ -180,7 +180,6 @@ char *evaluate_env_value(char *key, int argc, char **argv, char **env) {
   return NULL;
 }
 
-/* TODO: free argv[i] after eval (can't now because everything is statically allocated)*/
 void evaluate(int argc, char **const argv, char **env) {
   char *arg;
   char *old_arg;
@@ -208,6 +207,13 @@ void evaluate(int argc, char **const argv, char **env) {
 	free(old_arg);
       }
     }
-    argv[i] = eval_arg == NULL ? arg : eval_arg;
+
+    if (eval_arg == NULL) {
+      argv[i] = arg;
+    }
+    else {
+      memcpy(argv[i], eval_arg, strlen(eval_arg));
+      free(eval_arg);
+    }
   }
 }

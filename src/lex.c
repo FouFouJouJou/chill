@@ -7,7 +7,7 @@
 #include <lex.h>
 
 const char *token_type_to_string(enum token_type_t type) {
-  switch(type) {
+  switch (type) {
   case TOKEN_TYPE_AND:
     return "TOKEN_TYPE_AND";
   case TOKEN_TYPE_REDIR_IN_HERE_STRING:

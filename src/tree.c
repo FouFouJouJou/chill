@@ -12,7 +12,7 @@
 #include <env.h>
 
 char *node_type_to_string(enum node_type_t type) {
-  switch(type) {
+  switch (type) {
   case NODE_TYPE_CMD:
     return "NODE_TYPE_CMD";
   case NODE_TYPE_AND:
@@ -317,7 +317,7 @@ static int run_pipe_cmd(const struct node_t *pipe_node) {
 }
 
 int run(const struct node_t *const node) {
-  switch(node->type) {
+  switch (node->type) {
   case NODE_TYPE_CMD: {
     builtin_t fn;
     struct cmd_node_t *cmd_node;
@@ -347,7 +347,7 @@ int run(const struct node_t *const node) {
 
 /* TODO: implement redirection node printf */
 static char *node_type_symbol_to_string(enum node_type_t type) {
-  switch(type) {
+  switch (type) {
   case NODE_TYPE_AND:
     return "&&";
   case NODE_TYPE_OR:
@@ -418,7 +418,7 @@ void printf_redir(struct redir_node_t *redir_node) {
 
 void printf_tree(const struct node_t *const node, size_t level) {
   printf("%*c", (int)level, ' ');
-  switch(node->type) {
+  switch (node->type) {
   case NODE_TYPE_CMD: {
     struct cmd_node_t *cmd_node;
     cmd_node = (struct cmd_node_t *) node->node;
@@ -427,7 +427,6 @@ void printf_tree(const struct node_t *const node, size_t level) {
   }
   case NODE_TYPE_REDIR: {
     struct redir_node_t *redir_node = (struct redir_node_t *)node->node;
-    /* TODO: printf_redir(redir_node); */
     printf_redir(redir_node);
     printf_tree(redir_node->node, level+PRINTF_PADDING);
     break;
@@ -439,4 +438,26 @@ void printf_tree(const struct node_t *const node, size_t level) {
     break;
   }
   }
+}
+
+void free_tree(struct node_t *head) {
+  switch (head->type) {
+  case NODE_TYPE_REDIR: {
+    struct redir_node_t *redir_node;
+    redir_node = ((struct redir_node_t *)(head->node));
+    free_tree(redir_node->node);
+    break;
+  }
+  case NODE_TYPE_CMD: {
+    struct cmd_node_t *cmd_node;
+    cmd_node = (struct cmd_node_t *)(head->node);
+    free_cmd(cmd_node->cmd);
+    break;
+  }
+  default:
+    free_tree(head->left_node);
+    free_tree(head->right_node);
+    break;
+  }
+  free(head);
 }
