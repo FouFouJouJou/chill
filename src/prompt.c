@@ -13,6 +13,7 @@ char *prompt(char *prompt) {
   line[size] = '\0';
 
   memcpy(prompt, line, size);
+  prompt[size] = '\0';
 
   return prompt;
 }

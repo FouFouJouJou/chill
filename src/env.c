@@ -163,7 +163,6 @@ int extract_vars(char *string, char *vars[]) {
   return total;
 }
 
-/* TODO: evaluate variables in argv */
 char *evaluate_env_value(char *key, int argc, char **argv, char **env) {
   char **env_var;
   char *value;

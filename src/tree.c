@@ -357,7 +357,6 @@ int run(const struct node_t *const node) {
   }
 }
 
-/* TODO: implement redirection node printf */
 static char *node_type_symbol_to_string(enum node_type_t type) {
   switch (type) {
   case NODE_TYPE_AND:

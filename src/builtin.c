@@ -122,15 +122,25 @@ static int echo(size_t argc, char **argv, char **env) {
   return 0;
 }
 
+static int exit_(size_t argc, char **argv, char **env) {
+  (void) argc;
+  (void) argv;
+  (void) env;
+  exit(0);
+}
+
 builtin_t cmd_to_builtin(const char *const cmd) {
   builtin_t fn = NULL;
+  if (!strncmp(cmd, "which", 5)) {
+    fn = which;
+  }
   if (!strncmp(cmd, "echo", 4)) {
     fn = echo;
   }
-  else if (!strncmp(cmd, "which", 5)) {
-    fn = which;
+  if (!strncmp(cmd, "exit", 4)) {
+    fn = exit_;
   }
-  else if (!strncmp(cmd, "cd", 2)) {
+  if (!strncmp(cmd, "cd", 2)) {
     fn = cd;
   }
 
