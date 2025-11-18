@@ -244,7 +244,7 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
       remove(here_string_file_name);
     }
     else if (in_options == REDIR_IN_FLAG_HERE_DOC) {
-      /* remove(here_doc_file_name); */
+      remove(here_doc_file_name);
     }
   }
   if (out_redir) {
