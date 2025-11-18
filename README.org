@@ -23,15 +23,20 @@ A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
     - [X] output
     - [X] error
 - [X] env
-- [-] builtins [57%]
+- [-] builtins [62%]
   - [X] cd
   - [X] echo
   - [X] which
   - [X] exit
   - [ ] export
   - [ ] unset
+  - [X] history
   - [ ] more...
 
-- [ ] history
+- [-] history [50%]
+  - [X] reading
+  - [X] synching
+  - [ ] circular buffering
+  - [ ] more builtin operations
 - [ ] signals
 - [ ] jobs
