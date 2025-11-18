@@ -33,32 +33,28 @@ static size_t read_from_file(const char *const file_name, char *buffer) {
 }
 
 size_t read_history(struct history_t *const history) {
-  size_t size, idx;
+  size_t idx;
   char buffer[1<<8];
   char *buffer_p, *new_line_delim, *line;
-  size = read_from_file(history_file, buffer);
+  read_from_file(history_file, buffer);
   buffer_p = buffer;
   idx = 0;
 
+  memset(history->cmds, 0, MAX_HISTORY_CAP*sizeof(char *));
   history->count = 0;
-  history->start = history->cmds;
-  history->finish = history->cmds;
 
   while ((new_line_delim = strchr(buffer_p, '\n'))) {
     int line_len;
-
-    line_len = (int)(new_line_delim-buffer_p);
+    line_len = (int)(new_line_delim-buffer_p)+1;
     line = calloc(line_len, sizeof(char));
-    memcpy(line, buffer_p, line_len);
+    memcpy(line, buffer_p, line_len-1);
     line[line_len] = '\0';
 
-    history->finish += 1;
     history->cmds[idx++] = line;
     buffer_p = new_line_delim+1;
   }
 
   history->count = idx;
-  (void) size;
   return 0;
 }
 
@@ -67,6 +63,7 @@ size_t append_cmd(const char *const cmd, struct history_t *const history) {
   FILE *file = fopen(history_file, "a");
   fwrite(cmd, sizeof(char), strlen(cmd), file);
   fwrite("\n", sizeof(char), 1, file);
+  fflush(file);
   fclose(file);
 
   read_history(history);
@@ -75,12 +72,21 @@ size_t append_cmd(const char *const cmd, struct history_t *const history) {
 }
 
 void printf_history(const struct history_t history) {
-  char **start;
-  printf("%ld\n", history.finish - history.start);
-  for (start = history.start; start != history.finish; ++start) {
-    printf("%s\n", *start);
+  size_t i;
+  for (i=0; i<history.count; ++i) {
+    printf("%s(%ld)\n", history.cmds[i], strlen(history.cmds[i]));
   }
 }
-void free_history(const struct history_t history) {
-  (void) history;
+
+void clear_history() {
+  FILE *file;
+  file = fopen(history_file, "w");
+  fclose(file);
+}
+
+void free_history(const struct history_t *history) {
+  size_t i;
+  for (i=0; i<history->count; ++i) {
+    free(history->cmds[i]);
+  }
 }

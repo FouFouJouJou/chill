@@ -7,8 +7,8 @@
 #include <assert.h>
 #include <builtin.h>
 #include <history.h>
-/* TODO: implement which to locate executables */
 
+/* TODO: implement which to locate executables */
 extern struct history_t history;
 
 static char *get_path(char **env) {
@@ -133,10 +133,14 @@ static int echo(size_t argc, char **argv, char **env) {
   return 0;
 }
 
-int history_(size_t argc, char **argv, char **env) {
+static int history_(size_t argc, char **argv, char **env) {
   (void) argc;
   (void) argv;
   (void) env;
+  if (argc == 2 && !strncmp(argv[1], "-c", strlen(argv[1]))) {
+    clear_history();
+    return 0;
+  }
   printf_history(history);
   return 0;
 }
@@ -145,6 +149,8 @@ static int exit_(size_t argc, char **argv, char **env) {
   (void) argc;
   (void) argv;
   (void) env;
+
+  free_history(&history);
   exit(0);
 }
 

@@ -90,8 +90,8 @@ struct token_t *string_tknzr(const char *const string) {
     tkn = malloc(sizeof(struct token_t));
     tkn->size = size;
     tkn->type = TOKEN_TYPE_RAW_STRING;
-    tkn->literal[tkn->size] = '\0';
     memcpy(tkn->literal, string, tkn->size);
+    tkn->literal[tkn->size] = '\0';
   }
 
   return tkn;

@@ -31,7 +31,9 @@ size_t setup_env(char **cmd_env) {
   }
 
   for (var = environ; *var != NULL; var++) {
-    cmd_env[env_size++] = *var;
+    if (strstr(*var, "PATH") == *var) {
+      cmd_env[env_size++] = *var;
+    }
   }
 
   cmd_env[env_size] = NULL;

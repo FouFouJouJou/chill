@@ -11,9 +11,6 @@
 extern int exit_code;
 extern struct history_t history;
 
-void loop_() {
-}
-
 int main() {
   char string[1<<8];
   read_history(&history);
@@ -21,6 +18,7 @@ int main() {
   while (1) {
     struct node_t *node;
     prompt(string);
+
     node = parse(string);
 #ifdef DEBUG
     printf_tree(node, 0);
