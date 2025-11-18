@@ -23,8 +23,8 @@ int main() {
 #ifdef DEBUG
     printf_tree(node, 0);
 #endif
-    exit_code = run(node);
     append_cmd(string, &history);
+    exit_code = run(node);
     memset(string, 0, sizeof(string));
     free_tree(node);
   }
