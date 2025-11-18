@@ -178,7 +178,7 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
       fd = read_here_string(redir_node->here_string);
     }
     else {
-      fd = open(redir_node->file_in, O_CREAT|O_RDONLY, 0644);
+      fd = open(redir_node->file_in, O_RDONLY, 0644);
       if (fd == -1) {
 	return errno;
       }
