@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <cmd.h>
 #include <stdint.h>
+
 #define REDIR_IN_FLAG_FILE 4
 #define REDIR_IN_FLAG_HERE_STRING 6
 #define REDIR_IN_FLAG_HERE_DOC 5

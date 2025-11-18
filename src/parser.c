@@ -128,13 +128,13 @@ struct node_t *parse_cmd(struct token_list_t *tkns) {
 
   int total_env;
 
-  cmd = malloc(sizeof(struct cmd_t));
+  cmd = calloc(1, sizeof(struct cmd_t));
   cmd->argc = 0;
 
-  cmd_node = malloc(sizeof(struct cmd_node_t));
+  cmd_node = calloc(1, sizeof(struct cmd_node_t));
   cmd_node->cmd = cmd;
 
-  node = malloc(sizeof(struct node_t));
+  node = calloc(1, sizeof(struct node_t));
   node->type = NODE_TYPE_CMD;
   node->node = (void*) cmd_node;
 
@@ -157,7 +157,7 @@ struct node_t *parse_cmd(struct token_list_t *tkns) {
   while (is_string(tkns->current) || is_redir(tkns->current)) {
     if (is_redir(tkns->current)) {
       if (redir_node == NULL) {
-	redir_node = malloc(sizeof(struct redir_node_t));
+	redir_node = calloc(1, sizeof(struct redir_node_t));
       }
 
       parse_redir(tkns, redir_node);
@@ -174,7 +174,7 @@ struct node_t *parse_cmd(struct token_list_t *tkns) {
   cmd->argv[cmd->argc] = NULL;
 
   if (redir_node != NULL) {
-    struct node_t *child_node = malloc(sizeof(struct node_t));
+    struct node_t *child_node = calloc(1, sizeof(struct node_t));
     child_node->type = NODE_TYPE_CMD;
     child_node->node = (void *)cmd_node;
     redir_node->node = child_node;
@@ -189,7 +189,7 @@ struct node_t *parse_operator(struct token_list_t *tkns) {
 
   assert(is_operator(tkns->current));
 
-  node = malloc(sizeof(struct node_t));
+  node = calloc(1, sizeof(struct node_t));
   node->type = token_operator_type_to_node_type(tkns->current->type);
 
   node->left_node = NULL;

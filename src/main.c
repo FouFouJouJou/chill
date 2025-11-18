@@ -26,7 +26,7 @@ int main() {
     append_cmd(string, &history);
     exit_code = run(node);
     memset(string, 0, sizeof(string));
-    /* free_tree(node); */
+    free_tree(node);
   }
   return EXIT_SUCCESS;
 }

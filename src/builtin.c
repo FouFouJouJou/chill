@@ -93,7 +93,7 @@ char *which_(const char *const cmd, const char **env) {
     return NULL;
   }
 
-  if (strstr(cmd, "./", 2) == cmd) {
+  if (strstr(cmd, "./") == cmd) {
     path = calloc(6, sizeof(char));
     memcpy(path, "hello", 5);
     path[5] = '\0';

@@ -12,6 +12,8 @@
 #include <env.h>
 
 int exit_code;
+static const char *const here_doc_file_name = "/tmp/fileXXXXXX.txt";
+static const char *const here_string_file_name = "/tmp/fileXXXXXXX.txt";
 
 char *node_type_to_string(enum node_type_t type) {
   switch (type) {
@@ -34,8 +36,7 @@ char *node_type_to_string(enum node_type_t type) {
 /* TODO: make `file_name` random */
 static int read_here_string(const char *const here_string) {
   int fd;
-  const char *const file_name = "/tmp/fileXXXXXXXXX.txt";
-  fd = open(file_name, O_CREAT|O_RDWR|O_TRUNC, 0644);
+  fd = open(here_string_file_name, O_CREAT|O_RDWR|O_TRUNC, 0644);
   if (fd == -1) {
     perror("Error opening input file");
     exit(errno);
@@ -52,14 +53,13 @@ static int read_here_string(const char *const here_string) {
 /* TODO: make `file_name` random */
 static int read_here_doc(const char *const eod) {
   int fd;
-  const char *const file_name = "/tmp/fileXXXXXX.txt";
   char buffer[1<<8] = {0};
   char line[1<<8] = {0};
   size_t input_size;
   size_t bits_written;
   size_t eod_len;
   eod_len = strlen(eod);
-  fd = open(file_name, O_CREAT|O_RDWR|O_TRUNC, 0644);
+  fd = open(here_doc_file_name, O_CREAT|O_RDWR|O_TRUNC, 0644);
   if (fd == -1) {
     fprintf(stderr, "Error opening input file\n");
     exit(errno);
@@ -68,7 +68,7 @@ static int read_here_doc(const char *const eod) {
   input_size = 0;
   while(1) {
     int line_len;
-    printf("> ");
+    printf(">> ");
     fgets(line, sizeof(line), stdin);
     line_len = strlen(line);
     if (strlen(line) > strlen(eod) && !strncmp(line+line_len-eod_len-1, eod, eod_len)) {
@@ -147,16 +147,11 @@ static int run_or_cmd(const struct node_t *or_node) {
 /* TODO: delete the input file after running if `here_string` or `here_doc` */
 static int run_redir_cmd(struct redir_node_t *const redir_node) {
   pid_t pid;
-  flag_t in_options;
-  flag_t out_options;
-  flag_t err_options;
+  flag_t in_options, out_options, err_options;
 
-  int in_redir;
-  int out_redir;
-  int err_redir;
+  int in_redir, out_redir, err_redir;
   int status;
 
-  (void)pid;
   in_options = input_flag_to_options(redir_node->in);
   out_options = flag_to_options(redir_node->out);
   err_options = flag_to_options(redir_node->err);
@@ -245,12 +240,12 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
 
   if (in_redir) {
     close(input_flag_to_fd(redir_node->in));
-    /* if (here_string) { */
-    /*   remove(here_string_file); */
-    /* } */
-    /* else if (here_doc) { */
-    /*   remove(here_doc_file); */
-    /* } */
+    if (in_options == REDIR_IN_FLAG_HERE_STRING) {
+      remove(here_string_file_name);
+    }
+    else if (in_options == REDIR_IN_FLAG_HERE_DOC) {
+      /* remove(here_doc_file_name); */
+    }
   }
   if (out_redir) {
     close(flag_to_fd(redir_node->out));
@@ -379,13 +374,8 @@ static char *node_type_symbol_to_string(enum node_type_t type) {
 }
 
 void printf_redir(struct redir_node_t *redir_node) {
-  flag_t in_options;
-  flag_t out_options;
-  flag_t err_options;
-
-  int in_redir;
-  int out_redir;
-  int err_redir;
+  flag_t in_options, out_options, err_options;
+  int in_redir, out_redir, err_redir;
 
   in_options = input_flag_to_options(redir_node->in);
   out_options = flag_to_options(redir_node->out);

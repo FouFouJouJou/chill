@@ -46,7 +46,7 @@ struct token_t *symbol_tknzr(const char *const string, const struct tknzr_t *con
   literal_size = strlen(tknzr->literal);
 
   if (!strncmp(string, tknzr->literal, literal_size)) {
-    tkn = malloc(sizeof(struct token_t));
+    tkn = calloc(1, sizeof(struct token_t));
     memcpy(tkn->literal, string, literal_size);
     tkn->literal[literal_size] = '\0';
     tkn->size = literal_size;
@@ -75,7 +75,7 @@ struct token_t *string_tknzr(const char *const string) {
 	string_p = chr+1;
       }
       else {
-	tkn = malloc(sizeof(struct token_t));
+	tkn = calloc(1, sizeof(struct token_t));
 	tkn->size = chr - string + 1;
 	tkn->type = quotes == '"' ? TOKEN_TYPE_DOUBLEQ_STRING : TOKEN_TYPE_SINGLEQ_STRING;
 	memcpy(tkn->literal, string, tkn->size);
@@ -87,7 +87,7 @@ struct token_t *string_tknzr(const char *const string) {
   else {
     int size;
     size = strcspn(string, " &><|");
-    tkn = malloc(sizeof(struct token_t));
+    tkn = calloc(1, sizeof(struct token_t));
     tkn->size = size;
     tkn->type = TOKEN_TYPE_RAW_STRING;
     memcpy(tkn->literal, string, tkn->size);
@@ -126,7 +126,7 @@ struct token_list_t *lex(const char *const input) {
   total_tkns = 0;
   input_ptr = input;
 
-  tkns = malloc(sizeof(struct token_t) * TOTAL_SUPPORTED_TOKENS);
+  tkns = calloc(1, sizeof(struct token_t) * TOTAL_SUPPORTED_TOKENS);
 
   append_tknzr(tknzrs,"<<<", TOKEN_TYPE_REDIR_IN_HERE_STRING, &total_tknzrs);
   append_tknzr(tknzrs,"2>>", TOKEN_TYPE_REDIR_ERR_APPEND, &total_tknzrs);
@@ -164,7 +164,7 @@ struct token_list_t *lex(const char *const input) {
   }
 
   tkns[total_tkns] = make_eof_token();
-  result = malloc(sizeof(struct token_list_t));
+  result = calloc(1, sizeof(struct token_list_t));
   result->head = tkns;
   result->current = tkns;
   return result;

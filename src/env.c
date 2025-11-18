@@ -31,7 +31,7 @@ size_t setup_env(char **cmd_env) {
   }
 
   for (var = environ; *var != NULL; var++) {
-    if (strstr(*var, "PATH") == *var) {
+    if (strstr(*var, "PATH") == *var || strstr(*var, "HOME") == *var || strstr(*var, "USER") == *var) {
       cmd_env[env_size++] = *var;
     }
   }
@@ -92,7 +92,7 @@ char* replace(char* string, const char* substr, const char* new_str) {
     }
   }
 
-  result = (char*)malloc(i + count * abs(new_len - old_len) + 1);
+  result = (char*)calloc(i + count * abs(new_len - old_len) + 1, sizeof(char));
   if (result == NULL) {
     fprintf(stderr, "%d %d\n", new_len, old_len);
     perror("memory allocation failed\n");
@@ -167,19 +167,17 @@ int extract_vars(char *string, char *vars[]) {
   return total;
 }
 
-/* $? */
-/* ls -> /usr/bin/ls */
 static char *evaluate_special_env_value(char *key, char **env) {
   char *value;
   (void) env;
   if (!strncmp(key, "$", 1)) {
-    value = malloc(sizeof(char)*3);
+    value = calloc(3, sizeof(char));
     sprintf(value, "%d", getpid());
     return value;
   }
 
   if (!strncmp(key, "?", 1)) {
-    value = malloc(sizeof(char)*3);
+    value = calloc(3, sizeof(char));
     sprintf(value, "%d", exit_code);
     return value;
   }
