@@ -13,6 +13,7 @@ extern struct history_t history;
 
 int main() {
   char string[1<<8];
+  init_environ();
   read_history(&history);
 
   while (1) {

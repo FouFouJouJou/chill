@@ -12,6 +12,7 @@ struct cmd_t {
   char *argv[1<<8];
   size_t argc;
   char *env[1<<8];
+  size_t total_env;
 };
 
 struct cmd_t *make_cmd(char executable[1<<8], char *argv[1<<8], size_t argc, char *env[1<<8]);

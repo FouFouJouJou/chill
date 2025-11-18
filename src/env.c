@@ -4,10 +4,29 @@
 #include <assert.h>
 #include <unistd.h>
 #include <env.h>
+#include <cmd.h>
 #include <ctype.h>
 
 extern char **environ;
+struct environ_t environ_;
 extern int exit_code;
+
+void init_environ() {
+  char **env;
+  for (env = environ; *env != NULL; ++env) {
+    size_t len;
+    int idx;
+    idx = (int)(env-environ);
+    len = strlen(*env);
+    environ_.env[idx] = calloc(len+1, sizeof(char));
+    memcpy(environ_.env[idx], *env, len);
+    environ_.env[idx][len] = '\0';
+  }
+  environ_.total = env-environ;
+}
+
+void free_environ() {
+}
 
 void printf_process_env(const char **const env) {
   const char **var;
@@ -21,24 +40,27 @@ void printf_process_env(const char **const env) {
   printf("], ");
 }
 
-size_t setup_env(char **cmd_env) {
-  size_t env_size;
+size_t setup_env(struct cmd_t *cmd) {
   char **var;
-  env_size = 0;
 
-  for (var = cmd_env; *var != NULL; var++) {
-    env_size++;
-  }
-
-  for (var = environ; *var != NULL; var++) {
-    if (strstr(*var, "PATH") == *var || strstr(*var, "HOME") == *var || strstr(*var, "USER") == *var) {
-      cmd_env[env_size++] = *var;
+  for (var = environ_.env; *var != NULL; var++) {
+    if (strstr(*var, "PATH") == *var
+	|| strstr(*var, "HOME") == *var
+	|| strstr(*var, "USER") == *var
+	) {
+      char *env_var;
+      size_t var_len;
+      var_len = strlen(*var);
+      env_var = calloc(var_len+1, sizeof(char));
+      memcpy(env_var, *var, var_len);
+      env_var[var_len] = '\0';
+      cmd->env[cmd->total_env++] = env_var;
     }
   }
 
-  cmd_env[env_size] = NULL;
+  cmd->env[cmd->total_env] = NULL;
 
-  return env_size;
+  return cmd->total_env;
 }
 
 char *pair_key(const char *const pair) {
@@ -62,7 +84,9 @@ static char *pair_value(const char *const pair) {
   char *result;
   int value_size;
   equals = strchr(pair, '=');
-  assert(equals != NULL);
+  if (equals == NULL) {
+    return NULL;
+  }
 
   value = equals+1;
   if (*value == '\0') {
@@ -76,6 +100,25 @@ static char *pair_value(const char *const pair) {
   result[value_size] = '\0';
   return result;
 }
+
+char *getenv_(char *key, char **env) {
+  char **env_p;
+  for (env_p = env; *env_p != NULL; ++env_p) {
+    if (strstr(*env_p, key) == *env_p) {
+      return pair_value(*env_p);
+    }
+  }
+  fprintf(stderr, "chill: %s not set\n", key);
+  return NULL;
+}
+
+int setenv(const char *name, const char *value, int overwrite) {
+  (void) name;
+  (void) value;
+  (void) overwrite;
+  return 0;
+}
+
 
 char* replace(char* string, const char* substr, const char* new_str) {
   char* result;

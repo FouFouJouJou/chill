@@ -69,5 +69,9 @@ void printf_cmd(const struct cmd_t *const cmd) {
 }
 
 void free_cmd(struct cmd_t *cmd) {
+  size_t i;
+  for (i=0; i<cmd->total_env; ++i) {
+    free(cmd->env[i]);
+  }
   free(cmd);
 }

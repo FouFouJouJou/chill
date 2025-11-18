@@ -325,7 +325,7 @@ int run(const struct node_t *const node) {
     struct cmd_node_t *cmd_node;
 
     cmd_node = (struct cmd_node_t *)node->node;
-    setup_env(cmd_node->cmd->env);
+    setup_env(cmd_node->cmd);
     evaluate(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
     memcpy(cmd_node->cmd->executable, cmd_node->cmd->argv[0], strlen(cmd_node->cmd->argv[0]));
     cmd_node->cmd->argv[0][strlen(cmd_node->cmd->argv[0])] = '\0';

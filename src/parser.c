@@ -142,11 +142,16 @@ struct node_t *parse_cmd(struct token_list_t *tkns) {
   total_env = 0;
   if (is_env_string(tkns)) {
     while(is_env_string(tkns)) {
-      cmd->env[total_env++] = tkns->current->literal;
+      char *var;
+      var = calloc(tkns->current->size+1, sizeof(char));
+      memcpy(var, tkns->current->literal, tkns->current->size);
+      var[tkns->current->size] = '\0';
+      cmd->env[total_env++] = var;
       YANK(tkns);
     }
   }
   cmd->env[total_env] = NULL;
+  cmd->total_env = total_env;
 
   assert(is_string(tkns->current));
   memcpy(cmd->executable, tkns->current->literal, tkns->current->size);

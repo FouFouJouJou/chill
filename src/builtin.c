@@ -6,20 +6,11 @@
 #include <dirent.h>
 #include <assert.h>
 #include <builtin.h>
+#include <env.h>
 #include <history.h>
 
 /* TODO: implement which to locate executables */
 extern struct history_t history;
-
-static char *get_path(char **env) {
-  char **env_p;
-  for (env_p = env; *env_p != NULL; ++env_p) {
-    if (strstr(*env_p, "PATH") == *env_p) {
-      return *env_p;
-    }
-  }
-  return NULL;
-}
 
 int find_file_in_directory(const char *dirname, const char *filename_to_find) {
   DIR *dir;
@@ -98,7 +89,7 @@ char *which_(const char *const cmd, const char **env) {
     memcpy(path, "hello", 5);
     path[5] = '\0';
   } else {
-    env_path = get_path((char **)env);
+    env_path = getenv_("PATH", (char **)env);
     assert(env_path != NULL);
     path = which__(cmd, env_path);
   }
@@ -122,9 +113,16 @@ static int which(size_t argc, char **argv, char **env) {
 
 static int cd(size_t argc, char **argv, char **env) {
   (void) env;
-  assert(argc == 2);
-  if (chdir(argv[1]) == -1) {
+  if (argc == 2 && chdir(argv[1]) == -1) {
     return errno;
+  }
+
+  if (argc == 1) {
+    char *home = getenv_("HOME", env);
+    if (chdir(home) == -1) {
+      free(home);
+      return errno;
+    }
   }
 
   return 0;
@@ -160,6 +158,7 @@ static int exit_(size_t argc, char **argv, char **env) {
   (void) argv;
   (void) env;
 
+  free_environ();
   free_history(&history);
   exit(0);
 }
