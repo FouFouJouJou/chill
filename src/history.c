@@ -40,6 +40,7 @@ size_t read_history(struct history_t *const history) {
   buffer_p = buffer;
   idx = 0;
 
+  history->count = 0;
   history->start = history->cmds;
   history->finish = history->cmds;
 
@@ -56,6 +57,7 @@ size_t read_history(struct history_t *const history) {
     buffer_p = new_line_delim+1;
   }
 
+  history->count = idx;
   (void) size;
   return 0;
 }
@@ -70,12 +72,6 @@ size_t append_cmd(const char *const cmd, struct history_t *const history) {
   read_history(history);
 
   return 1;
-}
-
-struct history_t init_history() {
-  struct history_t history;
-  memset(history.cmds, 0, MAX_HISTORY_CAP*sizeof(char*));
-  return history;
 }
 
 void printf_history(const struct history_t history) {
