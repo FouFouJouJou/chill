@@ -6,7 +6,10 @@
 #include <dirent.h>
 #include <assert.h>
 #include <builtin.h>
+#include <history.h>
 /* TODO: implement which to locate executables */
+
+extern struct history_t history;
 
 static char *get_path(char **env) {
   char **env_p;
@@ -130,6 +133,14 @@ static int echo(size_t argc, char **argv, char **env) {
   return 0;
 }
 
+int history_(size_t argc, char **argv, char **env) {
+  (void) argc;
+  (void) argv;
+  (void) env;
+  printf_history(history);
+  return 0;
+}
+
 static int exit_(size_t argc, char **argv, char **env) {
   (void) argc;
   (void) argv;
@@ -139,6 +150,9 @@ static int exit_(size_t argc, char **argv, char **env) {
 
 builtin_t cmd_to_builtin(const char *const cmd) {
   builtin_t fn = NULL;
+  if (!strncmp(cmd, "history", 7)) {
+    fn = history_;
+  }
   if (!strncmp(cmd, "which", 5)) {
     fn = which;
   }
