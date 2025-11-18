@@ -9,9 +9,14 @@
 #include <history.h>
 
 extern int exit_code;
+extern struct history_t history;
 
-void run_() {
+void loop_() {
+}
+
+int main() {
   char string[1<<8];
+  read_history(&history);
 
   while (1) {
     struct node_t *node;
@@ -21,14 +26,9 @@ void run_() {
     printf_tree(node, 0);
 #endif
     exit_code = run(node);
+    append_cmd(string, &history);
     memset(string, 0, sizeof(string));
     free_tree(node);
   }
-}
-
-int main() {
-  struct history_t history = init_history();
-  read_history(&history);
-  printf_history(history);
   return EXIT_SUCCESS;
 }

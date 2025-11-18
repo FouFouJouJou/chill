@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <history.h>
 
+struct history_t history;
 char *history_file = "/tmp/chill_history";
 
 static size_t read_from_file(const char *const file_name, char *buffer) {
@@ -59,10 +60,16 @@ size_t read_history(struct history_t *const history) {
   return 0;
 }
 
-size_t append_command(const char *const cmd, struct history_t *const history) {
-  (void) cmd;
-  (void) history;
-  return 0;
+size_t append_cmd(const char *const cmd, struct history_t *const history) {
+  /* NOTE: trying FILE* instead of fd for a more ANSI C compliant code */
+  FILE *file = fopen(history_file, "a");
+  fwrite(cmd, sizeof(char), strlen(cmd), file);
+  fwrite("\n", sizeof(char), 1, file);
+  fclose(file);
+
+  read_history(history);
+
+  return 1;
 }
 
 struct history_t init_history() {
