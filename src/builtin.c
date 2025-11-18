@@ -78,7 +78,9 @@ static char *which__(const char *const cmd, const char *path) {
 
 static int is_executable(const char *const filepath) {
   if (access(filepath, F_OK | X_OK) == 0) {
+#ifdef DEBUG
     printf("File '%s' exists and is executable.\n", filepath);
+#endif
     return 1;
   }
   return errno;
@@ -90,9 +92,17 @@ char *which_(const char *const cmd, const char **env) {
   if (!is_executable(cmd)) {
     return NULL;
   }
-  env_path = get_path((char **)env);
-  assert(env_path != NULL);
-  path = which__(cmd, env_path);
+
+  if (strstr(cmd, "./", 2) == cmd) {
+    path = calloc(6, sizeof(char));
+    memcpy(path, "hello", 5);
+    path[5] = '\0';
+  } else {
+    env_path = get_path((char **)env);
+    assert(env_path != NULL);
+    path = which__(cmd, env_path);
+  }
+
   return path;
 }
 
