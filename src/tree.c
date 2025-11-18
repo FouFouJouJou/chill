@@ -144,7 +144,7 @@ static int run_or_cmd(const struct node_t *or_node) {
 }
 
 /* TODO: use masking to set fd in the flag and not `|` */
-/* TODO: delete the input file after running if `in_redir` and `here_doc` */
+/* TODO: delete the input file after running if `here_string` or `here_doc` */
 static int run_redir_cmd(struct redir_node_t *const redir_node) {
   pid_t pid;
   flag_t in_options;
@@ -245,6 +245,12 @@ static int run_redir_cmd(struct redir_node_t *const redir_node) {
 
   if (in_redir) {
     close(input_flag_to_fd(redir_node->in));
+    /* if (here_string) { */
+    /*   remove(here_string_file); */
+    /* } */
+    /* else if (here_doc) { */
+    /*   remove(here_doc_file); */
+    /* } */
   }
   if (out_redir) {
     close(flag_to_fd(redir_node->out));
