@@ -63,12 +63,9 @@ size_t append_cmd(const char *const cmd, struct history_t *const history) {
   FILE *file = fopen(history_file, "a");
   fwrite(cmd, sizeof(char), strlen(cmd), file);
   fwrite("\n", sizeof(char), 1, file);
-  fflush(file);
   fclose(file);
 
   read_history(history);
-
-  /* printf("appending: %s(%ld)\n", cmd, strlen(cmd)); */
 
   return 1;
 }
@@ -76,7 +73,7 @@ size_t append_cmd(const char *const cmd, struct history_t *const history) {
 void printf_history(const struct history_t history) {
   size_t i;
   for (i=0; i<history.count; ++i) {
-    printf("%s(%ld)\n", history.cmds[i], strlen(history.cmds[i]));
+    printf("%ld %s\n", i+1, history.cmds[i]);
   }
 }
 

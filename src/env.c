@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 #include <unistd.h>
 #include <env.h>
 #include <cmd.h>
@@ -25,7 +26,119 @@ void init_environ() {
   environ_.total = env-environ;
 }
 
+static char *pair_value(const char *const pair) {
+  char *equals;
+  char *value;
+  char *result;
+  int value_size;
+  equals = strchr(pair, '=');
+  if (equals == NULL) {
+    return NULL;
+  }
+
+  value = equals+1;
+  if (*value == '\0') {
+    result = calloc(1, sizeof(char));
+    result[0] = '\0';
+    return result;
+  }
+  value_size = pair+strlen(pair)-equals;
+  result = calloc(value_size, sizeof(char));
+  strncpy(result, value, value_size);
+  result[value_size] = '\0';
+  return result;
+}
+
+
+static char *findenv(const char *key, char **env) {
+  char **env_p;
+  for (env_p = env; *env_p != NULL; ++env_p) {
+    if (strstr(*env_p, key) == *env_p) {
+      return *env_p;
+    }
+  }
+  return NULL;
+}
+
+char *getenv_(const char *key, char **env) {
+  char *var;
+  var = findenv(key, env);
+  if (var == NULL) {
+    fprintf(stderr, "chill: %s not set\n", key);
+    return NULL;
+  }
+  return pair_value(var);
+}
+
+static int putenv(const char *name, const char *value) {
+  char *var;
+  size_t name_len, value_len, var_len;
+  name_len = strlen(name);
+  value_len = strlen(value);
+  var_len = name_len + 1 + value_len + 1;
+
+  var = findenv(name, environ_.env);
+  assert(var != NULL);
+
+  var = realloc(var, var_len*sizeof(char));
+  memcpy(strchr(var, '=')+1, value, value_len);
+  var[var_len] = '\0';
+  return 0;
+}
+
+int setenv(const char *name, const char *value, int overwrite) {
+  char *val;
+
+  if (environ_.total+1 > MAX_ENV_CAP) {
+    errno = ENOMEM;
+    return -1;
+  }
+
+  if (name == NULL) {
+    errno = EINVAL;
+    return -1;
+  }
+
+  if (overwrite == 0) {
+    return 0;
+  }
+
+  val = findenv(name, environ_.env);
+  if (val == NULL) {
+    export(name, value);
+  } else {
+    putenv(name, value);
+  }
+
+  return 0;
+}
+
+void export(const char *name, const char *value) {
+  size_t name_len, value_len, var_len;
+
+  name_len = strlen(name);
+  value_len = strlen(value);
+  var_len = name_len+1+value_len+1;
+  environ_.env[environ_.total] = calloc(var_len, sizeof(char));
+  strcat(environ_.env[environ_.total], name);
+  environ_.env[environ_.total][name_len] = '=';
+  strcat(environ_.env[environ_.total]+name_len+1, value);
+  environ_.env[environ_.total][var_len] = '\0';
+  environ_.total++;
+}
+
+void printf_environ() {
+  size_t i;
+  for (i=0; i<environ_.total; ++i) {
+    printf("%ld %s\n", i+1, environ_.env[i]);
+  }
+}
+
 void free_environ() {
+  size_t i;
+  for (i=0; i<environ_.total; ++i) {
+    free(environ_.env[i]);
+  }
 }
 
 void printf_process_env(const char **const env) {
@@ -77,48 +190,6 @@ char *pair_key(const char *const pair) {
 
   return result;
 }
-
-static char *pair_value(const char *const pair) {
-  char *equals;
-  char *value;
-  char *result;
-  int value_size;
-  equals = strchr(pair, '=');
-  if (equals == NULL) {
-    return NULL;
-  }
-
-  value = equals+1;
-  if (*value == '\0') {
-    result = calloc(1, sizeof(char));
-    result[0] = '\0';
-    return result;
-  }
-  value_size = pair+strlen(pair)-equals;
-  result = calloc(value_size, sizeof(char));
-  strncpy(result, value, value_size);
-  result[value_size] = '\0';
-  return result;
-}
-
-char *getenv_(char *key, char **env) {
-  char **env_p;
-  for (env_p = env; *env_p != NULL; ++env_p) {
-    if (strstr(*env_p, key) == *env_p) {
-      return pair_value(*env_p);
-    }
-  }
-  fprintf(stderr, "chill: %s not set\n", key);
-  return NULL;
-}
-
-int setenv(const char *name, const char *value, int overwrite) {
-  (void) name;
-  (void) value;
-  (void) overwrite;
-  return 0;
-}
-
 
 char* replace(char* string, const char* substr, const char* new_str) {
   char* result;

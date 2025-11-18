@@ -9,6 +9,7 @@
 #include <history.h>
 
 extern int exit_code;
+extern struct environ_t environ_;
 extern struct history_t history;
 
 int main() {
