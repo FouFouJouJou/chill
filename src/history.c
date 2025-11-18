@@ -14,7 +14,7 @@ static size_t read_from_file(const char *const file_name, char *buffer) {
   int fd, bytes_read;
   off_t raw_bytes;
 
-  fd = open(file_name, O_CREAT|O_RDWR, 0644);
+  fd = open(file_name, O_CREAT|O_RDONLY, 0644);
   if(fd == -1) {
     exit(80);
   }
@@ -67,6 +67,8 @@ size_t append_cmd(const char *const cmd, struct history_t *const history) {
   fclose(file);
 
   read_history(history);
+
+  /* printf("appending: %s(%ld)\n", cmd, strlen(cmd)); */
 
   return 1;
 }

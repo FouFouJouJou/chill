@@ -4,6 +4,8 @@
 #define MAX_HISTORY_CAP (1<<8)
 
 /* using a circular buffer */
+/* TODO: "wc <<< I love the way you lie" error fix for history */
+
 struct history_t {
   char *cmds[MAX_HISTORY_CAP];
   size_t count;

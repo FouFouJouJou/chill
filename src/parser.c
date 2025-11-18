@@ -65,15 +65,15 @@ void parse_redir(struct token_list_t *tkns, struct redir_node_t *node) {
   case TOKEN_TYPE_REDIR_IN_HERE_STRING:
     YANK(tkns);
     assert(is_string(tkns->current));
-    memcpy(node->here_string, tkns->current, tkns->current->size);
-    node->file_in[tkns->current->size] = '\0';
+    memcpy(node->here_string, tkns->current->literal, tkns->current->size);
+    node->here_string[tkns->current->size] = '\0';
     assert(input_flag_to_options(node->in) == 0);
     set_input_options(&node->in, REDIR_IN_FLAG_HERE_STRING);
     break;
   case TOKEN_TYPE_REDIR_IN_FILE:
     YANK(tkns);
     assert(is_string(tkns->current));
-    memcpy(node->file_in, tkns->current, tkns->current->size);
+    memcpy(node->file_in, tkns->current->literal, tkns->current->size);
     node->file_in[tkns->current->size] = '\0';
     assert(input_flag_to_options(node->in) == 0);
     set_input_options(&node->in, REDIR_IN_FLAG_FILE);
