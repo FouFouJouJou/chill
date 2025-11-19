@@ -238,15 +238,22 @@ size_t setup_env(struct cmd_t *cmd) {
       memcpy(env_var, *var, var_len);
       env_var[var_len] = '\0';
       cmd->env[cmd->total_env++] = env_var;
-      printf("%s\n", cmd->env[cmd->total_env-1]);
     }
   }
 
   cmd->env[cmd->total_env] = NULL;
-
   return cmd->total_env;
 }
 
+size_t unset(const char *key) {
+  char *var;
+  (void) key;
+  return 0;
+}
+size_t unsetstr(const char *pair) {
+  (void) pair;
+  return 0;
+}
 
 char* replace(char* string, const char* substr, const char* new_str) {
   char* result;

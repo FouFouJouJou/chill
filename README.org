@@ -45,6 +45,6 @@ A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
   - [X] reading
   - [X] synching
   - [ ] circular buffering
-  - [ ] more builtin operations
+  - [ ] more operations
 - [ ] signals
 - [ ] jobs

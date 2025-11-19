@@ -21,6 +21,8 @@ char *getenv_(const char *key, char **env);
 char *getenviron(const char *key);
 size_t setenviron(const char *name, const char *value, int overwrite);
 size_t setenvironstr(const char *pair);
+size_t unset(const char *key);
+size_t unsetstr(const char *pair);
 /* int setenv_str(const char *pair); */
 
 char* replace(char* string, const char* substr, const char* new_str);
