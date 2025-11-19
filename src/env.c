@@ -24,6 +24,30 @@ void init_environ() {
     environ_.env[idx][len] = '\0';
   }
   environ_.total = env-environ;
+  environ_.env[environ_.total] = NULL;
+}
+
+char *pair_key(const char *const pair) {
+  char *equals;
+  char *result;
+  int result_len;
+  equals = strchr(pair, '=');
+  assert(equals != NULL && equals != pair);
+  result_len = equals-pair;
+
+  result = calloc(result_len, sizeof(char));
+  strncpy(result, pair, result_len);
+  result[result_len] = '\0';
+
+  return result;
+}
+
+static size_t env_total(char **env) {
+  size_t total;
+  char **env_p;
+  total = 0;
+  for (env_p = env; *env_p != NULL; ++total, ++env_p) {}
+  return total;
 }
 
 static char *pair_value(const char *const pair) {
@@ -49,8 +73,7 @@ static char *pair_value(const char *const pair) {
   return result;
 }
 
-
-static char *findenv(const char *key, char **env) {
+static char *findenv_(const char *key, char **env) {
   char **env_p;
   for (env_p = env; *env_p != NULL; ++env_p) {
     if (strstr(*env_p, key) == *env_p) {
@@ -62,7 +85,7 @@ static char *findenv(const char *key, char **env) {
 
 char *getenv_(const char *key, char **env) {
   char *var;
-  var = findenv(key, env);
+  var = findenv_(key, env);
   if (var == NULL) {
     fprintf(stderr, "chill: %s not set\n", key);
     return NULL;
@@ -70,14 +93,14 @@ char *getenv_(const char *key, char **env) {
   return pair_value(var);
 }
 
-static int putenv(const char *name, const char *value) {
+static size_t putenv_(const char *name, const char *value, char **env) {
   char *var;
   size_t name_len, value_len, var_len;
   name_len = strlen(name);
   value_len = strlen(value);
   var_len = name_len + 1 + value_len + 1;
 
-  var = findenv(name, environ_.env);
+  var = findenv_(name, env);
   assert(var != NULL);
 
   var = realloc(var, var_len*sizeof(char));
@@ -86,10 +109,29 @@ static int putenv(const char *name, const char *value) {
   return 0;
 }
 
-int setenv(const char *name, const char *value, int overwrite) {
-  char *val;
+static size_t addenv_(const char *name, const char *value, char **env) {
+  size_t name_len, value_len, var_len, total;
+  total = env_total(env);
 
-  if (environ_.total+1 > MAX_ENV_CAP) {
+  name_len = strlen(name);
+  value_len = strlen(value);
+  var_len = name_len+1+value_len+1;
+  env[total] = calloc(var_len, sizeof(char));
+  strcat(env[total], name);
+  env[total][name_len] = '=';
+  strcat(env[total]+name_len+1, value);
+  env[total][var_len] = '\0';
+  env[total+1] = NULL;
+
+  return 1;
+}
+
+static size_t setenv_(const char *name, const char *value, int overwrite, char **env) {
+  char *val;
+  size_t total;
+  total = env_total(env);
+
+  if (total+1 > MAX_ENV_CAP) {
     errno = ENOMEM;
     return -1;
   }
@@ -100,31 +142,55 @@ int setenv(const char *name, const char *value, int overwrite) {
   }
 
   if (overwrite == 0) {
-    return 0;
+    return total;
   }
 
-  val = findenv(name, environ_.env);
+  val = findenv_(name, env);
   if (val == NULL) {
-    export(name, value);
+    return addenv_(name, value, env);
   } else {
-    putenv(name, value);
+    return putenv_(name, value, env);
+  }
+}
+
+static size_t setenvstr_(const char *pair, char **env) {
+
+  if (strchr(pair, '=') == NULL) {
+    return setenv_(pair, "", 1, env);
+  }
+  else {
+    char *key, *val;
+    size_t result;
+    key = pair_key(pair);
+    val = pair_value(pair);
+
+    result = setenv_(key, val, 1, env);
+
+    free(key);
+    free(val);
+
+    return result;
   }
 
   return 0;
 }
 
-void export(const char *name, const char *value) {
-  size_t name_len, value_len, var_len;
+size_t setenvstr(const char *pair) {
+  environ_.total += setenvstr_(pair, environ_.env);
+  return environ_.total;
+}
 
-  name_len = strlen(name);
-  value_len = strlen(value);
-  var_len = name_len+1+value_len+1;
-  environ_.env[environ_.total] = calloc(var_len, sizeof(char));
-  strcat(environ_.env[environ_.total], name);
-  environ_.env[environ_.total][name_len] = '=';
-  strcat(environ_.env[environ_.total]+name_len+1, value);
-  environ_.env[environ_.total][var_len] = '\0';
-  environ_.total++;
+char *getenv(const char *name) {
+  return getenv_(name, environ_.env);
+}
+
+size_t putenv(const char *name, const char *value) {
+  return putenv_(name, value, environ_.env);
+}
+
+size_t setenv(const char *name, const char *value, int overwrite) {
+  environ_.total += setenv_(name, value, overwrite, environ_.env);
+  return environ_.total;
 }
 
 void printf_environ() {
@@ -160,6 +226,7 @@ size_t setup_env(struct cmd_t *cmd) {
     if (strstr(*var, "PATH") == *var
 	|| strstr(*var, "HOME") == *var
 	|| strstr(*var, "USER") == *var
+	|| strstr(*var, "hello") == *var
 	) {
       char *env_var;
       size_t var_len;
@@ -176,20 +243,6 @@ size_t setup_env(struct cmd_t *cmd) {
   return cmd->total_env;
 }
 
-char *pair_key(const char *const pair) {
-  char *equals;
-  char *result;
-  int result_len;
-  equals = strchr(pair, '=');
-  assert(equals != NULL && equals != pair);
-  result_len = equals-pair;
-
-  result = calloc(result_len, sizeof(char));
-  strncpy(result, pair, result_len);
-  result[result_len] = '\0';
-
-  return result;
-}
 
 char* replace(char* string, const char* substr, const char* new_str) {
   char* result;

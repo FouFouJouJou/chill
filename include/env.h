@@ -18,8 +18,10 @@ size_t setup_env(struct cmd_t *cmd);
 void printf_process_env(const char **const env);
 
 char *getenv_(const char *key, char **env);
-int setenv(const char *name, const char *value, int overwrite);
-void export(const char *name, const char *value);
+char *getenv(const char *key);
+size_t setenv(const char *name, const char *value, int overwrite);
+size_t setenvstr(const char *pair);
+/* int setenv_str(const char *pair); */
 
 char* replace(char* string, const char* substr, const char* new_str);
 void evaluate(int argc, char **const argv, char **env);
