@@ -238,6 +238,7 @@ size_t setup_env(struct cmd_t *cmd) {
       memcpy(env_var, *var, var_len);
       env_var[var_len] = '\0';
       cmd->env[cmd->total_env++] = env_var;
+      printf("%s\n", cmd->env[cmd->total_env-1]);
     }
   }
 
