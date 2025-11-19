@@ -159,7 +159,7 @@ static int export_b(size_t argc, char **argv, char **env) {
   (void) argv;
   (void) env;
   for (i=1; i<argc; ++i) {
-    setenvstr(argv[i]);
+    setenvironstr(argv[i]);
   }
 
   return 0;

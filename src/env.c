@@ -73,40 +73,40 @@ static char *pair_value(const char *const pair) {
   return result;
 }
 
-static char *findenv_(const char *key, char **env) {
+static char **findenv_(const char *key, char **env) {
   char **env_p;
   for (env_p = env; *env_p != NULL; ++env_p) {
     if (strstr(*env_p, key) == *env_p) {
-      return *env_p;
+      return env_p;
     }
   }
   return NULL;
 }
 
 char *getenv_(const char *key, char **env) {
-  char *var;
+  char **var;
   var = findenv_(key, env);
-  if (var == NULL) {
+  if (*var == NULL) {
     fprintf(stderr, "chill: %s not set\n", key);
     return NULL;
   }
-  return pair_value(var);
+  return pair_value(*var);
 }
 
 static size_t putenv_(const char *name, const char *value, char **env) {
-  char *var;
+  char **var;
   size_t name_len, value_len, var_len;
   name_len = strlen(name);
   value_len = strlen(value);
-  /* s=f */
-  var_len = name_len + 1 + value_len + 1;
+  var_len = name_len + 1 + value_len;
 
   var = findenv_(name, env);
-  assert(var != NULL);
+  assert(*var != NULL);
 
-  var = realloc(var, var_len*sizeof(char));
-  memcpy(strchr(var, '=')+1, value, value_len);
-  var[value_len == 0 ? var_len-1 : var_len] = '\0';
+  *var = realloc(*var, (var_len+1)*sizeof(char));
+  memcpy(strchr(*var, '=')+1, value, value_len);
+  (*var)[var_len] = '\0';
+
   return 0;
 }
 
@@ -128,7 +128,7 @@ static size_t addenv_(const char *name, const char *value, char **env) {
 }
 
 static size_t setenv_(const char *name, const char *value, int overwrite, char **env) {
-  char *val;
+  char **var;
   size_t total;
   total = env_total(env);
 
@@ -146,10 +146,11 @@ static size_t setenv_(const char *name, const char *value, int overwrite, char *
     return total;
   }
 
-  val = findenv_(name, env);
-  if (val == NULL) {
+  var = findenv_(name, env);
+  if (*var == NULL) {
     return addenv_(name, value, env);
   } else {
+    printf("putting\n");
     return putenv_(name, value, env);
   }
 }
@@ -164,6 +165,7 @@ static size_t setenvstr_(const char *pair, char **env) {
     size_t result;
     key = pair_key(pair);
     val = pair_value(pair);
+    printf("Key: %s, value: %s\n", key, val);
 
     result = setenv_(key, val, 1, env);
 
@@ -176,20 +178,20 @@ static size_t setenvstr_(const char *pair, char **env) {
   return 0;
 }
 
-size_t setenvstr(const char *pair) {
+size_t setenvironstr(const char *pair) {
   environ_.total += setenvstr_(pair, environ_.env);
   return environ_.total;
 }
 
-char *getenv(const char *name) {
+char *getenviron(const char *name) {
   return getenv_(name, environ_.env);
 }
 
-size_t putenv(const char *name, const char *value) {
+size_t putenviron(const char *name, const char *value) {
   return putenv_(name, value, environ_.env);
 }
 
-size_t setenv(const char *name, const char *value, int overwrite) {
+size_t setenviron(const char *name, const char *value, int overwrite) {
   environ_.total += setenv_(name, value, overwrite, environ_.env);
   return environ_.total;
 }
