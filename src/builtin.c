@@ -45,6 +45,9 @@ int find_file_in_directory(const char *dirname, const char *filename_to_find) {
 static char *which__(const char *const cmd, const char *path) {
   char *delim;
   char dir[1<<8];
+  if(path == NULL) {
+    return NULL;
+  }
 
   while ((delim = strchr(path, ':')) != NULL) {
     int dir_size;
@@ -80,6 +83,8 @@ static int is_executable(const char *const filepath) {
 char *which_(const char *const cmd, const char **env) {
   char *env_path;
   char *path;
+  path = NULL;
+
   if (!is_executable(cmd)) {
     return NULL;
   }
@@ -90,7 +95,6 @@ char *which_(const char *const cmd, const char **env) {
     path[5] = '\0';
   } else {
     env_path = getenv_("PATH", (char **)env);
-    assert(env_path != NULL);
     path = which__(cmd, env_path);
   }
 
@@ -155,11 +159,19 @@ static int history_(size_t argc, char **argv, char **env) {
 
 static int export_b(size_t argc, char **argv, char **env) {
   size_t i;
-  (void) argc;
-  (void) argv;
   (void) env;
   for (i=1; i<argc; ++i) {
     setenvironstr(argv[i]);
+  }
+
+  return 0;
+}
+
+static int unset_(size_t argc, char **argv, char **env) {
+  size_t i;
+  (void) env;
+  for (i=1; i<argc; ++i) {
+    unset(argv[i]);
   }
 
   return 0;
@@ -179,6 +191,9 @@ builtin_t cmd_to_builtin(const char *const cmd) {
   builtin_t fn = NULL;
   if (!strncmp(cmd, "history", 7)) {
     fn = history_;
+  }
+  if (!strncmp(cmd, "unset", 6)) {
+    fn = unset_;
   }
   if (!strncmp(cmd, "export", 6)) {
     fn = export_b;

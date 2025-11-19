@@ -86,10 +86,11 @@ static char **findenv_(const char *key, char **env) {
 char *getenv_(const char *key, char **env) {
   char **var;
   var = findenv_(key, env);
-  if (*var == NULL) {
+  if (var == NULL) {
     fprintf(stderr, "chill: %s not set\n", key);
     return NULL;
   }
+
   return pair_value(*var);
 }
 
@@ -101,7 +102,7 @@ static size_t putenv_(const char *name, const char *value, char **env) {
   var_len = name_len + 1 + value_len;
 
   var = findenv_(name, env);
-  assert(*var != NULL);
+  assert(var != NULL);
 
   *var = realloc(*var, (var_len+1)*sizeof(char));
   memcpy(strchr(*var, '=')+1, value, value_len);
@@ -147,7 +148,7 @@ static size_t setenv_(const char *name, const char *value, int overwrite, char *
   }
 
   var = findenv_(name, env);
-  if (*var == NULL) {
+  if (var == NULL) {
     return addenv_(name, value, env);
   } else {
     printf("putting\n");
@@ -229,8 +230,8 @@ size_t setup_env(struct cmd_t *cmd) {
     if (strstr(*var, "PATH") == *var
 	|| strstr(*var, "HOME") == *var
 	|| strstr(*var, "USER") == *var
-	|| strstr(*var, "hello") == *var
-	) {
+	|| strstr(*var, "hello") == *var)
+	{
       char *env_var;
       size_t var_len;
       var_len = strlen(*var);
@@ -241,15 +242,32 @@ size_t setup_env(struct cmd_t *cmd) {
     }
   }
 
-  cmd->env[cmd->total_env] = NULL;
   return cmd->total_env;
 }
 
-size_t unset(const char *key) {
-  char *var;
-  (void) key;
-  return 0;
+static size_t unset_(const char *key, char **env) {
+  char **var, **env_p, *var_p;
+  var = findenv_(key, env);
+  if (var == NULL) {
+    return 0;
+  }
+
+  var_p = *var;
+
+  for (env_p = var; *env_p != NULL; ++env_p) {
+    *env_p = *(env_p+1);
+  }
+
+  free(var_p);
+
+  return 1;
 }
+
+size_t unset(const char *key) {
+  environ_.total -= unset_(key, environ_.env);
+  return environ_.total;
+}
+
 size_t unsetstr(const char *pair) {
   (void) pair;
   return 0;

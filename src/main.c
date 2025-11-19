@@ -5,6 +5,7 @@
 #include <lex.h>
 #include <env.h>
 #include <cmd.h>
+#include <builtin.h>
 #include <prompt.h>
 #include <history.h>
 
