@@ -158,7 +158,8 @@ static int export_b(size_t argc, char **argv, char **env) {
   (void) argc;
   (void) argv;
   (void) env;
-  for (i=0; i<argc; ++i) {
+  for (i=1; i<argc; ++i) {
+    setenvstr(argv[i]);
   }
 
   return 0;

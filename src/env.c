@@ -98,6 +98,7 @@ static size_t putenv_(const char *name, const char *value, char **env) {
   size_t name_len, value_len, var_len;
   name_len = strlen(name);
   value_len = strlen(value);
+  /* s=f */
   var_len = name_len + 1 + value_len + 1;
 
   var = findenv_(name, env);
@@ -105,7 +106,7 @@ static size_t putenv_(const char *name, const char *value, char **env) {
 
   var = realloc(var, var_len*sizeof(char));
   memcpy(strchr(var, '=')+1, value, value_len);
-  var[var_len] = '\0';
+  var[value_len == 0 ? var_len-1 : var_len] = '\0';
   return 0;
 }
 
