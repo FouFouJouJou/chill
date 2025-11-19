@@ -14,7 +14,7 @@ A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
   - [X] or
   - [X] and
   - [X] commands
-  - [ ] statements [%]
+  - [ ] statements [0%]
     - [ ] if
     - [ ] while
     - [ ] more...
@@ -31,12 +31,12 @@ A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
     - [X] output
     - [X] error
 - [X] env
-- [-] builtins [62%]
+- [-] builtins [75%]
   - [X] cd
   - [X] echo
   - [X] which
   - [X] exit
-  - [ ] export
+  - [X] export
   - [ ] unset
   - [X] history
   - [ ] more...
