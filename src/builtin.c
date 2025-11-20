@@ -87,9 +87,25 @@ char *which_(const char *const cmd, const char **env) {
   }
 
   if (strstr(cmd, "./") == cmd) {
-    path = calloc(6, sizeof(char));
-    memcpy(path, "hello", 5);
-    path[5] = '\0';
+    size_t cwd_len, cmd_len, path_len;
+    char cwd[1<<8];
+    cmd_len = strlen(cmd);
+
+    if (cmd_len == 2) {
+      return NULL;
+    }
+
+    if (getcwd(cwd, sizeof(cwd)) == NULL) {
+      perror("chill: getcwd() error");
+      return NULL;
+    }
+
+    cwd_len = strlen(cwd);
+    path_len = cwd_len+cmd_len-1;
+    path = calloc(path_len+1, sizeof(char));
+    memcpy(path, cwd, cwd_len);
+    memcpy(path+cwd_len, cmd+1, cmd_len-1);
+    path[path_len] = '\0';
   } else {
     env_path = getenv_("PATH", (char **)env);
     path = which__(cmd, env_path);
