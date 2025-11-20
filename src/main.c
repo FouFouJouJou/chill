@@ -11,7 +11,6 @@
 #include <history.h>
 
 extern int exit_code;
-extern struct environ_t environ_;
 
 void handle_suspend(int sig) {
   (void) sig;
