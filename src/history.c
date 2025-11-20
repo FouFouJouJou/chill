@@ -32,7 +32,7 @@ static size_t read_from_file(const char *const file_name, char *buffer) {
   return (size_t) bytes_read;
 }
 
-size_t read_history(struct history_t *const history) {
+size_t read_history() {
   size_t idx;
   char buffer[1<<8];
   char *buffer_p, *new_line_delim, *line;
@@ -40,8 +40,8 @@ size_t read_history(struct history_t *const history) {
   buffer_p = buffer;
   idx = 0;
 
-  memset(history->cmds, 0, MAX_HISTORY_CAP*sizeof(char *));
-  history->count = 0;
+  memset(history.cmds, 0, MAX_HISTORY_CAP*sizeof(char *));
+  history.count = 0;
 
   while ((new_line_delim = strchr(buffer_p, '\n'))) {
     int line_len;
@@ -50,27 +50,27 @@ size_t read_history(struct history_t *const history) {
     memcpy(line, buffer_p, line_len-1);
     line[line_len] = '\0';
 
-    history->cmds[idx++] = line;
+    history.cmds[idx++] = line;
     buffer_p = new_line_delim+1;
   }
 
-  history->count = idx;
+  history.count = idx;
   return 0;
 }
 
-size_t append_cmd(const char *const cmd, struct history_t *const history) {
+size_t append_cmd(const char *const cmd) {
   /* NOTE: trying FILE* instead of fd for a more ANSI C compliant code */
   FILE *file = fopen(history_file, "a");
   fwrite(cmd, sizeof(char), strlen(cmd), file);
   fwrite("\n", sizeof(char), 1, file);
   fclose(file);
 
-  read_history(history);
+  read_history();
 
   return 1;
 }
 
-void printf_history(const struct history_t history) {
+void printf_history() {
   size_t i;
   for (i=0; i<history.count; ++i) {
     printf("%ld %s\n", i+1, history.cmds[i]);
@@ -83,9 +83,9 @@ void clear_history() {
   fclose(file);
 }
 
-void free_history(const struct history_t *history) {
+void free_history() {
   size_t i;
-  for (i=0; i<history->count; ++i) {
-    free(history->cmds[i]);
+  for (i=0; i<history.count; ++i) {
+    free(history.cmds[i]);
   }
 }

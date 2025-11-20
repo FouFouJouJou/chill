@@ -9,9 +9,6 @@
 #include <env.h>
 #include <history.h>
 
-/* TODO: implement which to locate executables */
-extern struct history_t history;
-
 int find_file_in_directory(const char *dirname, const char *filename_to_find) {
   DIR *dir;
   struct dirent *entry;
@@ -153,7 +150,7 @@ static int history_(size_t argc, char **argv, char **env) {
     clear_history();
     return 0;
   }
-  printf_history(history);
+  printf_history();
   return 0;
 }
 
@@ -183,7 +180,7 @@ static int exit_(size_t argc, char **argv, char **env) {
   (void) env;
 
   free_environ();
-  free_history(&history);
+  free_history();
   exit(0);
 }
 
