@@ -1,5 +1,6 @@
 #ifndef __CMD_H__
 #define __CMD_H__
+
 #include <stdint.h>
 
 #define FLAG_OPTIONS_SIZE 2
