@@ -10,11 +10,13 @@
 static size_t num = 1;
 struct job_t *jobs[1<<8];
 size_t recent = 1;
+size_t total = 0;
 
 static void *schedule_(void *arg) {
   int status;
   struct job_t *job = (struct job_t *)arg;
   waitpid(job->pid, &status, 0);
+
   printf("[%ld] %d done\n", job->num, job->pid);
   free_tree(job->node);
   free(job);

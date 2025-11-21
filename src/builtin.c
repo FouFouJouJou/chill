@@ -204,7 +204,16 @@ static int fg(size_t argc, char **argv, char **env) {
   (void) env;
 
   printf("resuming %d\n", jobs[recent]->pid);
-  /* tcsetpgrp(STDIN_FILENO, jobs[recent]->pid); */
+  tcsetpgrp(STDIN_FILENO, jobs[recent]->pid);
+  kill(jobs[recent]->pid, SIGCONT);
+  return 0;
+}
+
+static int job(size_t argc, char **argv, char **env) {
+  (void) argc;
+  (void) argv;
+  (void) env;
+
   return 0;
 }
 
@@ -235,11 +244,14 @@ builtin_t cmd_to_builtin(const char *const cmd) {
   if (!strncmp(cmd, "echo", 4)) {
     fn = echo;
   }
-  if (!strncmp(cmd, "fg", 2)) {
-    fn = fg;
-  }
   if (!strncmp(cmd, "exit", 4)) {
     fn = exit_;
+  }
+  if (!strncmp(cmd, "job", 3)) {
+    fn = job;
+  }
+  if (!strncmp(cmd, "fg", 2)) {
+    fn = fg;
   }
   if (!strncmp(cmd, "cd", 2)) {
     fn = cd;

@@ -229,6 +229,7 @@ size_t setup_env(struct cmd_t *cmd) {
   for (var = environ_.env; *var != NULL; var++) {
     if (strstr(*var, "PATH") == *var
 	|| strstr(*var, "HOME") == *var
+	|| strstr(*var, "TERM") == *var
 	|| strstr(*var, "USER") == *var
 	|| strstr(*var, "hello") == *var)
 	{

@@ -30,7 +30,6 @@ int main() {
     }
 
     node = parse(string);
-    /* append_cmd(string); */
     memset(string, 0, sizeof(string));
 
     if (node->detached) {
