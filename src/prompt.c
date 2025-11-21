@@ -3,7 +3,7 @@
 #include <string.h>
 #include <prompt.h>
 
-char *prompt(char *prompt) {
+size_t prompt(char *prompt) {
   char line[1<<8];
   int size;
 
@@ -15,5 +15,5 @@ char *prompt(char *prompt) {
   memcpy(prompt, line, size);
   prompt[size] = '\0';
 
-  return prompt;
+  return size;
 }

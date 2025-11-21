@@ -1,6 +1,6 @@
 #ifndef __PROMPT_H__
 #define __PROMPT_H__
 
-char *prompt(char *string);
+size_t prompt(char *prompt);
 
 #endif

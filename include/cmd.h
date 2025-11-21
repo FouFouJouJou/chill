@@ -9,7 +9,6 @@
 typedef uint32_t flag_t;
 
 struct cmd_t {
-  int stmt;
   char executable[1<<8];
   char *argv[1<<8];
   size_t argc;

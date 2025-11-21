@@ -100,6 +100,7 @@ static int run_cmd(const struct cmd_node_t *cmd_node) {
   pid_t pid;
 
   pid = fork();
+  setpgid(pid, pid);
   if (pid == 0) {
     struct cmd_t *cmd = cmd_node->cmd;
     exit_code = execve(cmd->executable, cmd->argv, cmd->env);

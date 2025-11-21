@@ -9,6 +9,6 @@ struct job_t {
   size_t num, pid;
 };
 
-int schedule(struct job_t *job);
+int schedule(struct node_t *node);
 
 #endif
