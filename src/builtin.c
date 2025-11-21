@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -8,6 +9,13 @@
 #include <builtin.h>
 #include <env.h>
 #include <history.h>
+#include <job.h>
+#include <signal.h>
+
+extern size_t recent;
+
+/* TODO: create an api without exposing jobs */
+extern struct job_t *jobs[1<<8];
 
 int find_file_in_directory(const char *dirname, const char *filename_to_find) {
   DIR *dir;
@@ -190,6 +198,16 @@ static int unset_(size_t argc, char **argv, char **env) {
   return 0;
 }
 
+static int fg(size_t argc, char **argv, char **env) {
+  (void) argc;
+  (void) argv;
+  (void) env;
+
+  printf("resuming %d\n", jobs[recent]->pid);
+  /* tcsetpgrp(STDIN_FILENO, jobs[recent]->pid); */
+  return 0;
+}
+
 static int exit_(size_t argc, char **argv, char **env) {
   (void) argc;
   (void) argv;
@@ -216,6 +234,9 @@ builtin_t cmd_to_builtin(const char *const cmd) {
   }
   if (!strncmp(cmd, "echo", 4)) {
     fn = echo;
+  }
+  if (!strncmp(cmd, "fg", 2)) {
+    fn = fg;
   }
   if (!strncmp(cmd, "exit", 4)) {
     fn = exit_;

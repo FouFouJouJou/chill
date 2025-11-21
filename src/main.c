@@ -14,14 +14,8 @@
 
 extern int exit_code;
 
-void handle_sig(int sig) {
-  printf("SIG: %d\n", sig);
-}
-
 int main() {
   char string[1<<8];
-  signal(SIGCHLD, handle_sig);
-
   init_environ();
   read_history();
 
@@ -36,7 +30,7 @@ int main() {
     }
 
     node = parse(string);
-    append_cmd(string);
+    /* append_cmd(string); */
     memset(string, 0, sizeof(string));
 
     if (node->detached) {
