@@ -9,35 +9,36 @@
 #include <builtin.h>
 #include <prompt.h>
 #include <history.h>
+#include <job.h>
 
 extern int exit_code;
 
-void handle_suspend(int sig) {
-  (void) sig;
-  printf("SIG\n");
-  exit(0);
-}
+/* void handle_suspend(int sig) { */
+/*   (void) sig; */
+/*   printf("SIG\n"); */
+/*   exit(0); */
+/* } */
 
 int main() {
   char string[1<<8];
-  signal(SIGINT, handle_suspend);
+  /* signal(SIGINT, handle_suspend); */
   printf("%d\n", (int) getpid());
 
   init_environ();
   read_history();
 
   while (1) {
-    struct node_t *node;
+    struct job_t job;
     prompt(string);
 
-    node = parse(string);
+    job.node = parse(string);
 #ifdef DEBUG
-    printf_tree(node, 0);
+    printf_tree(job.node, 0);
 #endif
     append_cmd(string);
-    exit_code = run(node);
+    exit_code = schedule(&job);
     memset(string, 0, sizeof(string));
-    free_tree(node);
+    free_tree(job.node);
   }
   return EXIT_SUCCESS;
 }

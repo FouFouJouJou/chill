@@ -6,9 +6,9 @@
 
 struct job_t {
   struct node_t *node;
-  size_t idx;
+  size_t num;
 };
 
-void run_job(const struct job_t *job);
+int schedule(struct job_t *job);
 
 #endif

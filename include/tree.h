@@ -56,6 +56,7 @@ struct cmd_node_t {
 
 struct node_t {
   enum node_type_t type;
+  int detached;
   void *left_node;
   void *right_node;
   void *node;

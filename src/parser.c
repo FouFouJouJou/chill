@@ -207,12 +207,15 @@ struct node_t *parse(const char *const string) {
   struct token_list_t *tkns;
   struct node_t *op_stack[10];
   struct node_t *cmd_stack[10];
-  int op_stack_idx, cmd_stack_idx, i, k;
+  struct node_t *result;
+  int op_stack_idx, cmd_stack_idx, i, k, detached;
 
+  result = NULL;
+  detached = 0;
   op_stack_idx = 0;
   cmd_stack_idx = 0;
   tkns = lex(string);
-  while (tkns->current->type != TOKEN_TYPE_EOF) {
+  while (tkns->current->type != TOKEN_TYPE_EOF && tkns->current->type != TOKEN_TYPE_JOB) {
     struct node_t *cmd_node;
     struct node_t *op_node;
     if (is_operator(tkns->current)) {
@@ -222,6 +225,12 @@ struct node_t *parse(const char *const string) {
 
     cmd_node = parse_cmd(tkns);
     cmd_stack[cmd_stack_idx++] = cmd_node;
+  }
+
+  if(tkns->current->type == TOKEN_TYPE_JOB) {
+    YANK(tkns);
+    TOKEN_IS(tkns->current, TOKEN_TYPE_EOF);
+    detached = 1;
   }
 
   free_token_list(tkns);
@@ -251,9 +260,18 @@ struct node_t *parse(const char *const string) {
     }
   }
 
+  if (detached == 1) {
+    printf("running in bg\n");
+  }
+
   if (op_stack_idx == 0) {
     assert(cmd_stack_idx == 1);
+    result = cmd_stack[0];
     return cmd_stack[0];
   }
+  else {
+    result = op_stack[op_stack_idx-1];
+  }
+  result->detached = detached;
   return op_stack[op_stack_idx-1];
 }

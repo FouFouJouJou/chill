@@ -34,6 +34,8 @@ const char *token_type_to_string(enum token_type_t type) {
     return "TOKEN_TYPE_REDIR_ERR_TRUNC";
   case TOKEN_TYPE_RAW_STRING:
     return "TOKEN_TYPE_RAW_STRING";
+  case TOKEN_TYPE_JOB:
+    return "TOKEN_TYPE_JOB";
   default:
     exit(81);
   }
@@ -140,6 +142,7 @@ struct token_list_t *lex(const char *const input) {
   append_tknzr(tknzrs,"|", TOKEN_TYPE_PIPE, &total_tknzrs);
   append_tknzr(tknzrs,">", TOKEN_TYPE_REDIR_OUT_TRUNC, &total_tknzrs);
   append_tknzr(tknzrs,"<", TOKEN_TYPE_REDIR_IN_FILE, &total_tknzrs);
+  append_tknzr(tknzrs,"&", TOKEN_TYPE_JOB, &total_tknzrs);
 
   while (*input_ptr != '\0') {
     struct token_t *tkn;
