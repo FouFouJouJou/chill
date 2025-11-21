@@ -260,18 +260,14 @@ struct node_t *parse(const char *const string) {
     }
   }
 
-  if (detached == 1) {
-    printf("running in bg\n");
-  }
-
   if (op_stack_idx == 0) {
     assert(cmd_stack_idx == 1);
     result = cmd_stack[0];
-    return cmd_stack[0];
   }
   else {
     result = op_stack[op_stack_idx-1];
   }
+
   result->detached = detached;
-  return op_stack[op_stack_idx-1];
+  return result;
 }
