@@ -36,7 +36,7 @@ int main() {
     memset(string, 0, sizeof(string));
     printf_tree(node, 0);
 
-    schedule(node);
+    exit_code = schedule(node);
 
   }
   return EXIT_SUCCESS;

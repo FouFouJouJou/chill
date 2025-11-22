@@ -317,7 +317,7 @@ static int run_pipe_cmd(const struct node_t *pipe_node) {
   return EXIT_FAILURE;
 }
 
-int run(const struct node_t *const node) {
+struct node_t *process(struct node_t *node) {
   switch (node->type) {
   case NODE_TYPE_CMD: {
     char *executable_path;
@@ -331,18 +331,51 @@ int run(const struct node_t *const node) {
     cmd_node->cmd->argv[0][strlen(cmd_node->cmd->argv[0])] = '\0';
     fn = cmd_to_builtin(cmd_node->cmd->executable);
     if (fn != NULL) {
-      return fn(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
+      node->builtin = 1;
+      return node;
     }
+
+    node->builtin = 0;
 
     executable_path=which_(cmd_node->cmd->executable, (const char **)cmd_node->cmd->env);
     if (executable_path == NULL) {
       fprintf(stderr, "chill: command not found: %s\n", cmd_node->cmd->executable);
-      return 1;
+      return NULL;
     }
     if (executable_path != cmd_node->cmd->executable) {
       memcpy(cmd_node->cmd->executable, executable_path, strlen(executable_path));
       cmd_node->cmd->executable[strlen(executable_path)] = '\0';
       free(executable_path);
+    } else {
+      return NULL;
+    }
+
+    return node;
+  }
+  case NODE_TYPE_AND:
+  case NODE_TYPE_OR:
+  case NODE_TYPE_PIPE:
+    process(node->left_node);
+    process(node->right_node);
+    return node;
+  case NODE_TYPE_REDIR:
+    process(node->node);
+    return node;
+  default:
+    exit(80);
+  }
+}
+
+int run(struct node_t *const node) {
+  assert(node != NULL);
+  switch (node->type) {
+  case NODE_TYPE_CMD: {
+    struct cmd_node_t *cmd_node;
+    cmd_node = (struct cmd_node_t *)node->node;
+    if (node->builtin == 1) {
+      builtin_t fn;
+      fn = cmd_to_builtin(cmd_node->cmd->executable);
+      return fn(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
     }
 
     return run_cmd(cmd_node);
@@ -358,6 +391,11 @@ int run(const struct node_t *const node) {
   default:
     exit(80);
   }
+}
+
+int process_and_run(struct node_t *node) {
+  node = process(node);
+  return run(node);
 }
 
 static char *node_type_symbol_to_string(enum node_type_t type) {

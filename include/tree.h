@@ -56,7 +56,7 @@ struct cmd_node_t {
 
 struct node_t {
   enum node_type_t type;
-  int detached;
+  int detached, builtin;
   void *left_node;
   void *right_node;
   void *node;
@@ -65,6 +65,8 @@ struct node_t {
 void printf_tree(const struct node_t *const node, size_t level);
 char *node_type_to_string(enum node_type_t type);
 void free_tree(struct node_t *head);
-int run(const struct node_t *const node);
+struct node_t *process(struct node_t *node);
+int run(struct node_t *const node);
+int process_and_run(struct node_t *node);
 
 #endif

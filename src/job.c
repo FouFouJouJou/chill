@@ -73,7 +73,7 @@ void *schedule_(void *arg) {
   while (1) {
     pid = waitpid(-1, &status, WNOHANG);
     if (pid > 0) {
-      printf("%d done\n", pid);
+      /* printf("%d done\n", pid); */
     }
   }
   pthread_exit(0);
@@ -84,25 +84,30 @@ void init_job_thread() {
   pthread_create(&th, 0, schedule_, NULL);
 }
 
-/* TODO: no fork if builtin */
 int schedule(struct node_t *node) {
   pid_t pid;
   int status, ret;
-  pid = fork();
+  node = process(node);
 
-  if (pid == 0) {
-    exit(run(node));
+  if (node == NULL) {
+    return 1;
   }
 
   if (node->detached) {
+    pid = fork();
+
+    if (pid == 0) {
+      exit(run(node));
+    }
+
     waitpid(pid, &status, WNOHANG);
+
+    if (WIFEXITED(status)) {
+      ret = WEXITSTATUS(status);
+    }
   }
   else {
-    waitpid(pid, &status, 0);
-  }
-
-  if (WIFEXITED(status)) {
-    ret = WEXITSTATUS(status);
+    ret = run(node);
   }
 
   return ret;
