@@ -10,9 +10,9 @@ struct environ_t {
   size_t total;
 };
 
-void init_environ();
-void printf_environ();
-void free_environ();
+void init_environ(void);
+void printf_environ(void);
+void free_environ(void);
 
 size_t setup_env(struct cmd_t *cmd);
 void printf_process_env(const char **const env);

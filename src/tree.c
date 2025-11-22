@@ -96,20 +96,21 @@ static int read_here_doc(const char *const eod) {
 }
 
 static int run_cmd(const struct cmd_node_t *cmd_node) {
-  int status, exit_code;
+  int status;
   pid_t pid;
 
   pid = fork();
   if (pid == 0) {
     struct cmd_t *cmd = cmd_node->cmd;
-    exit_code = execve(cmd->executable, cmd->argv, cmd->env);
-    if (exit_code == -1) {
+    int ret = execve(cmd->executable, cmd->argv, cmd->env);
+    if (ret == -1) {
       fprintf(stderr, "run_cmd: error\n");
       exit(errno);
     }
   }
 
   waitpid(pid, &status, 0);
+
   if (WIFEXITED(status)) {
     return WEXITSTATUS(status);
   }
@@ -122,7 +123,7 @@ static int run_and_cmd(const struct node_t *and_node) {
 
   status1 = run(and_node->left_node);
 
-  if (status1 != 0) {
+  if (status1 != EXIT_SUCCESS) {
     return status1;
   }
 
@@ -135,7 +136,7 @@ static int run_or_cmd(const struct node_t *or_node) {
 
   status1 = run(or_node->left_node);
 
-  if (!status1) {
+  if (status1 == EXIT_SUCCESS) {
     return status1;
   }
 
@@ -303,9 +304,9 @@ static int run_pipe_cmd(const struct node_t *pipe_node) {
 
 
   if (WIFEXITED(status_1)) {
-    int exit_code;
-    exit_code = WEXITSTATUS(status_1);
-    if (exit_code != EXIT_SUCCESS) {
+    int ret;
+    ret = WEXITSTATUS(status_1);
+    if (ret != EXIT_SUCCESS) {
       return exit_code;
     }
   }
@@ -375,6 +376,7 @@ int run(struct node_t *const node) {
     if (node->builtin == 1) {
       builtin_t fn;
       fn = cmd_to_builtin(cmd_node->cmd->executable);
+      assert(fn != NULL);
       return fn(cmd_node->cmd->argc, cmd_node->cmd->argv, cmd_node->cmd->env);
     }
 

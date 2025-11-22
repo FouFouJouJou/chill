@@ -14,10 +14,10 @@ struct history_t {
   char **finish;
 };
 
-size_t read_history();
+size_t read_history(void);
 size_t append_cmd(const char *const cmd);
-void printf_history();
-void clear_history();
-void free_history();
+void printf_history(void);
+void clear_history(void);
+void free_history(void);
 
 #endif

@@ -13,6 +13,8 @@
 #include <job.h>
 
 extern int exit_code;
+extern struct job_list_t free_list;
+extern struct job_list_t alloc_list;
 
 int main() {
 
@@ -34,10 +36,8 @@ int main() {
 
     node = parse(string);
     memset(string, 0, sizeof(string));
-    printf_tree(node, 0);
 
     exit_code = schedule(node);
-
   }
   return EXIT_SUCCESS;
 }

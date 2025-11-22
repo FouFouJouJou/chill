@@ -198,6 +198,7 @@ static int unset_(size_t argc, char **argv, char **env) {
   return 0;
 }
 
+/* TODO: still not done */
 static int fg(size_t argc, char **argv, char **env) {
   (void) argc;
   (void) argv;
@@ -214,6 +215,7 @@ static int job(size_t argc, char **argv, char **env) {
   (void) argv;
   (void) env;
 
+  printf_jobs();
   return 0;
 }
 
@@ -227,6 +229,7 @@ static int exit_(size_t argc, char **argv, char **env) {
   exit(0);
 }
 
+/* TODO: sort out this mess */
 builtin_t cmd_to_builtin(const char *const cmd) {
   builtin_t fn = NULL;
   if (!strncmp(cmd, "history", 7)) {
