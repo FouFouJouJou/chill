@@ -151,7 +151,6 @@ static size_t setenv_(const char *name, const char *value, int overwrite, char *
   if (var == NULL) {
     return addenv_(name, value, env);
   } else {
-    printf("putting\n");
     return putenv_(name, value, env);
   }
 }
@@ -166,7 +165,6 @@ static size_t setenvstr_(const char *pair, char **env) {
     size_t result;
     key = pair_key(pair);
     val = pair_value(pair);
-    printf("Key: %s, value: %s\n", key, val);
 
     result = setenv_(key, val, 1, env);
 

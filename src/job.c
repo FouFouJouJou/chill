@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <assert.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -7,41 +8,102 @@
 #include <parser.h>
 #include <tree.h>
 
-static size_t num = 1;
-struct job_t *jobs[1<<8];
-size_t recent = 1;
+struct job_t jobs[MAX_JOB_CAP];
+struct free_list_t free_list;
+size_t recent = 0;
 size_t total = 0;
 
-static void *schedule_(void *arg) {
-  int status;
-  struct job_t *job = (struct job_t *)arg;
-  waitpid(job->pid, &status, 0);
+struct free_node_t *add_free_node_(size_t num, struct free_list_t *free_list) {
+  struct free_node_t *node;
+  node = calloc(1, sizeof(struct free_node_t));
+  node->num = num;
+  node->next = NULL;
 
-  printf("[%ld] %d done\n", job->num, job->pid);
-  free_tree(job->node);
-  free(job);
+  if (free_list->head == NULL) {
+    free_list->head = node;
+    return node;
+  }
+
+  else if (free_list->tail == NULL) {
+    free_list->head->next = node;
+    free_list->tail = node;
+    return node;
+  }
+
+  free_list->tail->next = node;
+  free_list->tail = node;
+  return node;
+}
+
+struct free_node_t *add_free_node(size_t num) {
+  return add_free_node_(num, &free_list);
+}
+
+static size_t get_free_(struct free_list_t *list) {
+  size_t result;
+  struct free_node_t *node = list->head;
+  assert(node != NULL && "MAX REACHED");
+  result = node->num;
+  list->head = node->next;
+  free(node);
+  list->total-=1;
+
+  return result;
+}
+
+size_t get_free() {
+  return get_free_(&free_list);
+}
+
+void init_free_list() {
+  size_t i;
+  free_list.head = NULL;
+  free_list.tail = NULL;
+  free_list.total = 0;
+  for (i=0; i<MAX_JOB_CAP; ++i) {
+    add_free_node(i);
+    free_list.total++;
+  }
+}
+
+void *schedule_(void *arg) {
+  int status;
+  pid_t pid;
+  (void) arg;
+  while (1) {
+    pid = waitpid(-1, &status, WNOHANG);
+    if (pid > 0) {
+      printf("%d done\n", pid);
+    }
+  }
   pthread_exit(0);
 }
 
-int schedule(struct node_t *node) {
+void init_job_thread() {
   pthread_t th;
-  pid_t pid;
-  struct job_t *job = calloc(1, sizeof(struct job_t));
-  recent = num;
-  job->num = num++;
-  job->node = node;
-  job->state = 0;
-  jobs[job->num] = job;
+  pthread_create(&th, 0, schedule_, NULL);
+}
 
+/* TODO: no fork if builtin */
+int schedule(struct node_t *node) {
+  pid_t pid;
+  int status, ret;
   pid = fork();
-  setpgid(pid, pid);
+
   if (pid == 0) {
-    exit(run(job->node));
+    exit(run(node));
   }
 
-  job->pid = pid;
-  printf("[%ld] %d\n", job->num, job->pid);
-  jobs[job->num] = job;
-  pthread_create(&th, NULL, schedule_, (void *)job);
-  return 0;
+  if (node->detached) {
+    waitpid(pid, &status, WNOHANG);
+  }
+  else {
+    waitpid(pid, &status, 0);
+  }
+
+  if (WIFEXITED(status)) {
+    ret = WEXITSTATUS(status);
+  }
+
+  return ret;
 }

@@ -15,7 +15,7 @@
 extern size_t recent;
 
 /* TODO: create an api without exposing jobs */
-extern struct job_t *jobs[1<<8];
+extern struct job_t jobs[MAX_JOB_CAP];
 
 int find_file_in_directory(const char *dirname, const char *filename_to_find) {
   DIR *dir;
@@ -203,9 +203,9 @@ static int fg(size_t argc, char **argv, char **env) {
   (void) argv;
   (void) env;
 
-  printf("resuming %d\n", jobs[recent]->pid);
-  tcsetpgrp(STDIN_FILENO, jobs[recent]->pid);
-  kill(jobs[recent]->pid, SIGCONT);
+  printf("resuming %d\n", jobs[recent].pid);
+  tcsetpgrp(STDIN_FILENO, jobs[recent].pid);
+  kill(-jobs[recent].pid, SIGCONT);
   return 0;
 }
 
