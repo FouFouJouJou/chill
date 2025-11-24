@@ -11,6 +11,7 @@ enum job_state_t {
   JOB_STATE_RUNNING = 0x0,
   JOB_STATE_STOPPED,
   JOB_STATE_KILLED,
+  JOB_STATE_DONE,
   JOB_STATE_TOTAL
 };
 
@@ -36,7 +37,7 @@ void init_job_thread();
 void init_free_list();
 struct job_t *register_job(pid_t pid);
 int schedule(struct node_t *node);
-void free_job(pid_t pid);
+void free_job(size_t num);
 void printf_jobs();
 
 #endif

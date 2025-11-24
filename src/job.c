@@ -8,6 +8,7 @@
 #include <parser.h>
 #include <tree.h>
 
+extern int exit_code;
 struct job_t *jobs[MAX_JOB_CAP];
 struct job_list_t free_list;
 struct job_list_t alloc_list;
@@ -29,6 +30,8 @@ char *job_state_to_string(enum job_state_t state) {
     return "JOB_STATE_KILLED";
   case JOB_STATE_TOTAL:
     return "JOB_STATE_TOTA";
+  case JOB_STATE_DONE:
+    return "JOB_STATE_DONE";
   default:
     assert(0 && "JOB STATE UNKNOWN");
     exit(81);
@@ -115,38 +118,6 @@ struct job_node_t *get_num_(size_t num, struct job_list_t *list) {
   return NULL;
 }
 
-void free_num(size_t num) {
-  struct job_node_t *node;
-  struct job_node_t *previous_node;
-
-  pthread_mutex_lock(&alloc_mutex);
-  previous_node = get_num_(num, &alloc_list);
-  if (previous_node != alloc_list.head) {
-    if (previous_node == NULL) {
-      pthread_mutex_unlock(&alloc_mutex);
-      exit(88);
-    }
-  }
-  if (previous_node == alloc_list.head) {
-    alloc_list.head = alloc_list.head->next;
-    node = previous_node;
-    node->next = NULL;
-    pthread_mutex_lock(&free_mutex);
-    add_node__(node, &free_list);
-    pthread_mutex_unlock(&free_mutex);
-  } else {
-    node = previous_node->next;
-    previous_node->next = previous_node->next->next;
-  }
-  pthread_mutex_unlock(&alloc_mutex);
-
-  pthread_mutex_lock(&free_mutex);
-  add_node__(node, &free_list);
-  pthread_mutex_lock(&alloc_mutex);
-  printf("lease: %ld, free: %ld\n", alloc_list.total, free_list.total);
-  pthread_mutex_unlock(&alloc_mutex);
-}
-
 void init_free_list() {
   size_t i;
   free_list.head = NULL;
@@ -162,52 +133,13 @@ void init_free_list() {
   }
 }
 
-void free_job(pid_t pid) {
-  (void) pid;
-}
-
-/* TODO: check for signal status */
-void *schedule_(void *arg) {
-  int status;
-  pid_t pid;
-  struct job_node_t *node;
-
-  while (1) {
-    pthread_mutex_lock(&alloc_mutex);
-    node = alloc_list.head;
-    if (node == NULL) {
-      pthread_mutex_unlock(&alloc_mutex);
-      continue;
-    }
-
-    while (node != NULL) {
-      pthread_mutex_unlock(&alloc_mutex);
-      pthread_mutex_lock(&job_mutex);
-      if (jobs[node->num]->state == JOB_STATE_STOPPED) {
-	/* TODO: schedule remove of the job */
-	pthread_mutex_unlock(&job_mutex);
-	continue;
-      }
-      pid = waitpid(jobs[node->num]->pid, &status, WNOHANG);
-      pthread_mutex_unlock(&job_mutex);
-      if (pid > 0) {
-	printf("[%d] done\n", pid);
-	pthread_mutex_lock(&job_mutex);
-	jobs[node->num]->state = JOB_STATE_STOPPED;
-	pthread_mutex_unlock(&job_mutex);
-	/* free_job(pid); */
-	/* free(jobs[node->num]); */
-	/* free_num(jobs[node->num]->num); */
-      }
-    }
-  }
-  (void) arg;
-  pthread_exit(0);
-}
-
-void init_job_thread() {
-  pthread_t th;
-  pthread_create(&th, 0, schedule_, NULL);
+void free_job(size_t num) {
+  pthread_mutex_lock(&alloc_mutex);
+  free(get_num_(num, &alloc_list));
+  pthread_mutex_unlock(&alloc_mutex);
+  pthread_mutex_lock(&free_mutex);
+  add_node_(num, &free_list);
+  pthread_mutex_unlock(&free_mutex);
 }
 
 static struct job_t *create_job(pid_t pid) {
@@ -242,6 +174,49 @@ void printf_jobs() {
   pthread_mutex_unlock(&job_mutex);
 }
 
+/* TODO: check for signal status */
+void *schedule_(void *arg) {
+  int status;
+  pid_t pid;
+  struct job_node_t *node;
+  size_t total_jobs;
+  size_t i;
+
+  while (1) {
+    pthread_mutex_lock(&alloc_mutex);
+    total_jobs = alloc_list.total;
+
+    if (total_jobs == 0) {
+      pthread_mutex_unlock(&alloc_mutex);
+      continue;
+    }
+
+    for (i=0, node=alloc_list.head; i<total_jobs; ++i, node=node->next) {
+      pthread_mutex_lock(&job_mutex);
+      pid = waitpid(jobs[node->num]->pid, &status, WNOHANG);
+      pthread_mutex_unlock(&job_mutex);
+      if (pid > 0) {
+	if (WIFEXITED(status)) {
+	  exit_code = WEXITSTATUS(status);
+	}
+	printf("[%d] done\n", pid);
+      pthread_mutex_lock(&job_mutex);
+      jobs[node->num]->state = JOB_STATE_DONE;
+      /* free_job(node->num); */
+      pthread_mutex_unlock(&job_mutex);
+      }
+    }
+    pthread_mutex_unlock(&alloc_mutex);
+  }
+  (void) arg;
+  pthread_exit(0);
+}
+
+void init_job_thread() {
+  pthread_t th;
+  pthread_create(&th, 0, schedule_, NULL);
+}
+
 int schedule(struct node_t *node) {
   pid_t pid;
   int status, ret;
@@ -251,6 +226,7 @@ int schedule(struct node_t *node) {
   if (node == NULL) {
     return 1;
   }
+
 
   if (node->detached) {
     pid = fork();

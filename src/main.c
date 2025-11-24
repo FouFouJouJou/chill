@@ -36,7 +36,7 @@ int main() {
     node = parse(string);
     memset(string, 0, sizeof(string));
 
-    exit_code = schedule(node);
+    schedule(node);
   }
   return EXIT_SUCCESS;
 }
