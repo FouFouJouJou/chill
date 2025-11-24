@@ -1,7 +1,7 @@
 * Chill
 A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
 
-* Features [3/8]
+* Features [4/8]
 - [X] lexing [100%]
   - [X] symbols [100%]
     - [X] and
@@ -46,5 +46,9 @@ A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
   - [X] synching
   - [ ] circular buffering
   - [ ] more operations
-- [ ] signals
-- [ ] jobs
+- [X] signals
+- [-] jobs [33%]
+  - [X] create
+  - [ ] fg
+  - [ ] bg
+  - [ ] more...
