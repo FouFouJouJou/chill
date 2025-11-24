@@ -82,14 +82,18 @@ static struct job_node_t *get_free_(struct job_list_t *list) {
 
 static size_t lease_num(void) {
   struct job_node_t *node;
+  size_t num;
+
   pthread_mutex_lock(&free_mutex);
   node = get_free_(&free_list);
+  num = node->num;
+  free(node);
   pthread_mutex_unlock(&free_mutex);
 
   pthread_mutex_lock(&alloc_mutex);
-  add_node__(node, &alloc_list);
+  add_node_(num, &alloc_list);
   pthread_mutex_unlock(&alloc_mutex);
-  return node->num;
+  return num;
 }
 
 struct job_node_t *get_num_(size_t num, struct job_list_t *list) {
@@ -109,7 +113,11 @@ struct job_node_t *get_num_(size_t num, struct job_list_t *list) {
     }
 
     if (node->next->num == num) {
-      return node;
+      struct job_node_t *result;
+      result = node->next;
+      result->next = NULL;
+      node->next = node->next->next;
+      return result;
     }
 
     node = node->next;
@@ -117,6 +125,23 @@ struct job_node_t *get_num_(size_t num, struct job_list_t *list) {
 
   return NULL;
 }
+
+static void release_num(size_t num) {
+  /* struct job_node_t *node; */
+  (void) num;
+
+  pthread_mutex_lock(&alloc_mutex);
+  /* node = get_num_(num, &alloc_list); */
+  /* free(node); */
+  printf("releasing: %ld\n", num);
+  alloc_list.total -= 1;
+  pthread_mutex_unlock(&alloc_mutex);
+
+  /* pthread_mutex_lock(&free_mutex); */
+  /* add_node_(num, &free_list); */
+  /* pthread_mutex_unlock(&free_mutex); */
+}
+
 
 void init_free_list() {
   size_t i;
@@ -133,13 +158,21 @@ void init_free_list() {
   }
 }
 
-void free_job(size_t num) {
+void free_job(pid_t pid) {
+  size_t i, total;
   pthread_mutex_lock(&alloc_mutex);
-  free(get_num_(num, &alloc_list));
+  total = alloc_list.total;
   pthread_mutex_unlock(&alloc_mutex);
-  pthread_mutex_lock(&free_mutex);
-  add_node_(num, &free_list);
-  pthread_mutex_unlock(&free_mutex);
+
+  for (i=0; i<total; ++i){
+    pthread_mutex_lock(&job_mutex);
+    if (jobs[i]->pid == pid) {
+      release_num(jobs[i]->num);
+      pthread_mutex_unlock(&job_mutex);
+      break;
+    }
+    pthread_mutex_unlock(&job_mutex);
+  }
 }
 
 static struct job_t *create_job(pid_t pid) {
@@ -163,50 +196,39 @@ static void printf_job(struct job_t *job) {
 }
 
 void printf_jobs() {
-  struct job_node_t *node;
+  /* struct job_node_t *node; */
+
+  pthread_mutex_lock(&alloc_mutex);
   printf("total jobs: %ld\n", alloc_list.total);
-  pthread_mutex_lock(&job_mutex);
-  for (node = alloc_list.head; node != NULL; node = node->next) {
-    /* printf("job\n"); */
-    /* printf("%p\n", (void *)(node)); */
-    printf_job(jobs[node->num]);
-  }
-  pthread_mutex_unlock(&job_mutex);
+  pthread_mutex_unlock(&alloc_mutex);
+  (void) printf_job;
+
+  /* for (node = alloc_list.head; node != NULL; node = node->next) { */
+  /*   /\* printf("job\n"); *\/ */
+  /*   /\* printf("%p\n", (void *)(node)); *\/ */
+  /*   pthread_mutex_lock(&job_mutex); */
+  /*   printf_job(jobs[node->num]); */
+  /*   pthread_mutex_unlock(&job_mutex); */
+  /* } */
+
+  /* pthread_mutex_unlock(&alloc_mutex); */
 }
 
 /* TODO: check for signal status */
 void *schedule_(void *arg) {
   int status;
   pid_t pid;
-  struct job_node_t *node;
-  size_t total_jobs;
-  size_t i;
 
   while (1) {
-    pthread_mutex_lock(&alloc_mutex);
-    total_jobs = alloc_list.total;
 
-    if (total_jobs == 0) {
-      pthread_mutex_unlock(&alloc_mutex);
-      continue;
-    }
-
-    for (i=0, node=alloc_list.head; i<total_jobs; ++i, node=node->next) {
-      pthread_mutex_lock(&job_mutex);
-      pid = waitpid(jobs[node->num]->pid, &status, WNOHANG);
-      pthread_mutex_unlock(&job_mutex);
-      if (pid > 0) {
-	if (WIFEXITED(status)) {
-	  exit_code = WEXITSTATUS(status);
-	}
-	printf("[%d] done\n", pid);
-      pthread_mutex_lock(&job_mutex);
-      jobs[node->num]->state = JOB_STATE_DONE;
-      /* free_job(node->num); */
-      pthread_mutex_unlock(&job_mutex);
+    pid = waitpid(-1, &status, WNOHANG);
+    if (pid > 0) {
+      if (WIFEXITED(status)) {
+	exit_code = WEXITSTATUS(status);
       }
+      printf("[%d] done\n", pid);
+      free_job(pid);
     }
-    pthread_mutex_unlock(&alloc_mutex);
   }
   (void) arg;
   pthread_exit(0);
