@@ -236,6 +236,11 @@ int schedule(struct node_t *node) {
   pthread_t th;
   struct job_t *job;
   node = process(node);
+
+#ifdef DEBUG
+  printf_tree(node, 0);
+#endif
+
   ret = 0;
 
   if (node == NULL) {

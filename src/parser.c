@@ -233,6 +233,8 @@ struct node_t *parse(const char *const string) {
     detached = 1;
   }
 
+  TOKEN_IS(tkns->current, TOKEN_TYPE_EOF);
+
   free_token_list(tkns);
 
   assert(op_stack_idx + 1 == cmd_stack_idx);
@@ -267,7 +269,6 @@ struct node_t *parse(const char *const string) {
   else {
     result = op_stack[op_stack_idx-1];
   }
-
   result->detached = detached;
   return result;
 }

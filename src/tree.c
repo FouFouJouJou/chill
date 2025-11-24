@@ -67,11 +67,11 @@ static int read_here_doc(const char *const eod) {
 
   input_size = 0;
   while(1) {
-    int line_len;
+    size_t line_len;
     printf(">> ");
     fgets(line, sizeof(line), stdin);
     line_len = strlen(line);
-    if (strlen(line) > strlen(eod) && !strncmp(line+line_len-eod_len-1, eod, eod_len)) {
+    if (line_len >= eod_len && !strncmp(line+line_len-eod_len-1, eod, eod_len)) {
       strncpy(buffer+input_size, line, line_len-eod_len-1);
       input_size+=line_len-eod_len-1;
       break;
@@ -360,7 +360,7 @@ struct node_t *process(struct node_t *node) {
     process(node->right_node);
     return node;
   case NODE_TYPE_REDIR:
-    process(node->node);
+    process(((struct redir_node_t *)node->node)->node);
     return node;
   default:
     assert(0 && "NODE UNKNOWN");

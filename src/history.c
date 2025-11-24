@@ -16,12 +16,14 @@ static size_t read_from_file(const char *const file_name, char *buffer) {
 
   fd = open(file_name, O_CREAT|O_RDONLY, 0644);
   if(fd == -1) {
+    perror("file open error");
     exit(80);
   }
   raw_bytes = lseek(fd, 0, SEEK_END);
   lseek(fd, 0, SEEK_SET);
   bytes_read = read(fd, buffer, raw_bytes);
   if (bytes_read == -1) {
+    perror("reading bytes error");
     exit(80);
   }
   if (bytes_read != raw_bytes) {
