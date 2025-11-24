@@ -93,7 +93,7 @@ static size_t lease_num(void) {
   return num;
 }
 
-struct job_node_t *get_num_(size_t num, struct job_list_t *list) {
+static struct job_node_t *get_num_(size_t num, struct job_list_t *list) {
   struct job_node_t *node;
   if (list->head->num == num) {
     node = list->head;
@@ -155,7 +155,7 @@ void init_free_list() {
   }
 }
 
-size_t release_job(size_t num) {
+static size_t release_job(size_t num) {
   pthread_mutex_lock(&job_mutex);
   free(jobs[num]);
   pthread_mutex_unlock(&job_mutex);
@@ -174,7 +174,7 @@ static struct job_t *create_job(pid_t pid) {
   return job;
 }
 
-struct job_t *register_job(pid_t pid) {
+static struct job_t *register_job(pid_t pid) {
   struct job_t *job = create_job(pid);
   pthread_mutex_lock(&job_mutex);
   jobs[job->num] = job;
@@ -202,12 +202,12 @@ void printf_jobs() {
 }
 
 /* TODO: check for signal status */
-void *schedule_(void *arg) {
+static void *schedule_(void *arg) {
   int status;
   pid_t pid;
   struct job_t *job = (struct job_t *)arg;
 
-  while(1) {
+  while (1) {
     pid = waitpid(job->pid, &status, 0);
     if (pid > 0) {
       printf("[%d] done\n", job->pid);
@@ -217,11 +217,6 @@ void *schedule_(void *arg) {
   }
 
   pthread_exit(0);
-}
-
-void init_job_thread() {
-  pthread_t th;
-  pthread_create(&th, 0, schedule_, NULL);
 }
 
 int schedule(struct node_t *node) {

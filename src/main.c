@@ -20,7 +20,6 @@ int main() {
   init_environ();
   init_free_list();
 
-  /* init_job_thread(); */
   read_history();
 
   while (1) {
