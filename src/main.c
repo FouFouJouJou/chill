@@ -19,8 +19,7 @@ int main() {
   char string[1<<8];
   init_environ();
   init_free_list();
-
-  read_history();
+  sync_history();
 
   while (1) {
     struct node_t *node;
@@ -33,6 +32,7 @@ int main() {
     }
 
     node = parse(string);
+    append_cmd(string);
     memset(string, 0, sizeof(string));
 
     schedule(node);

@@ -32,7 +32,7 @@ static size_t read_from_file(const char *const file_name, char *buffer) {
   return (size_t) bytes_read;
 }
 
-size_t read_history() {
+size_t sync_history() {
   size_t idx;
   char buffer[1<<8];
   char *buffer_p, *new_line_delim, *line;
@@ -65,7 +65,7 @@ size_t append_cmd(const char *const cmd) {
   fwrite("\n", sizeof(char), 1, file);
   fclose(file);
 
-  read_history();
+  sync_history();
 
   return 1;
 }
