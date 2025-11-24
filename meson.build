@@ -21,7 +21,7 @@ sources = files(
 )
 
 ## add_project_arguments('-DDEBUG', language: 'c')
-add_project_arguments('-D_POSIX_C_SOURCE', language: 'c')
+add_project_arguments('-D_POSIX_C_SOURCE=200809L', language: 'c')
 
 executable(
   'chill',

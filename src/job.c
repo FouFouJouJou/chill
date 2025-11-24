@@ -156,9 +156,6 @@ void init_free_list() {
 }
 
 static size_t release_job(size_t num) {
-  pthread_mutex_lock(&job_mutex);
-  free(jobs[num]);
-  pthread_mutex_unlock(&job_mutex);
   pthread_mutex_lock(&alloc_mutex);
   alloc_list.total -= 1;
   pthread_mutex_unlock(&alloc_mutex);
@@ -190,7 +187,6 @@ void printf_jobs() {
   struct job_node_t *node;
 
   pthread_mutex_lock(&alloc_mutex);
-  printf("total jobs: %ld\n", alloc_list.total);
 
   for (node = alloc_list.head; node != NULL; node = node->next) {
     pthread_mutex_lock(&job_mutex);
@@ -201,18 +197,33 @@ void printf_jobs() {
   pthread_mutex_unlock(&alloc_mutex);
 }
 
-/* TODO: check for signal status */
+/* TODO: process SIGKILL */
 static void *schedule_(void *arg) {
   int status;
   pid_t pid;
   struct job_t *job = (struct job_t *)arg;
 
+  printf("[%ld] %d\n", job->num, job->pid);
   while (1) {
-    pid = waitpid(job->pid, &status, 0);
-    if (pid > 0) {
-      printf("[%d] done\n", job->pid);
-      release_job(job->num);
-      break;
+    pid = waitpid(job->pid, &status, WUNTRACED|WCONTINUED);
+    if (WIFCONTINUED(status)) {
+      job->state = JOB_STATE_RUNNING;
+      printf("[%d] continued\n", job->pid);
+      continue;
+    }
+    if (WIFSTOPPED(status)) {
+      job->state = JOB_STATE_STOPPED;
+      printf("[%d] stopped\n", job->pid);
+      continue;
+    }
+
+    if (pid == job->pid) {
+      if (WIFEXITED(status)) {
+	release_job(job->num);
+	printf("[%d] done\n", job->pid);
+	free(job);
+	break;
+      }
     }
   }
 
