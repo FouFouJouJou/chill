@@ -274,8 +274,8 @@ static int run_pipe_cmd(const struct node_t *pipe_node) {
 
   pid_1 = fork();
   if (pid_1 == -1) {
-    errno = 80;
-    perror("fork failed");
+      perror("fork failed");
+      exit(errno);
   }
   if (pid_1 == 0) {
     close(fds[0]);
@@ -363,7 +363,7 @@ struct node_t *process(struct node_t *node) {
     process(node->node);
     return node;
   default:
-    exit(80);
+    assert(0 && "NODE UNKNOWN");
   }
 }
 
