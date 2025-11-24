@@ -126,10 +126,12 @@ struct job_node_t *get_num_(size_t num, struct job_list_t *list) {
 static void release_num(size_t num) {
   struct job_node_t *node;
 
+
+  pthread_mutex_lock(&alloc_mutex);
   node = get_num_(num, &alloc_list);
+  pthread_mutex_unlock(&alloc_mutex);
   assert(node != NULL);
 
-  alloc_list.total -= 1;
   free(node);
 
   pthread_mutex_lock(&free_mutex);
@@ -153,32 +155,15 @@ void init_free_list() {
   }
 }
 
-size_t free_job(pid_t pid) {
-  size_t i;
-  size_t ret;
-
+size_t release_job(size_t num) {
+  pthread_mutex_lock(&job_mutex);
+  free(jobs[num]);
+  pthread_mutex_unlock(&job_mutex);
   pthread_mutex_lock(&alloc_mutex);
-  if (alloc_list.total == 0) {
-    pthread_mutex_unlock(&alloc_mutex);
-    return 0;
-  }
-
-  ret = 0;
-  printf("total_jobs: %ld\n", alloc_list.total);
-  for (i=0; i<alloc_list.total; ++i) {
-    pthread_mutex_lock(&job_mutex);
-    if (jobs[i]->pid == pid) {
-      release_num(jobs[i]->num);
-      pthread_mutex_unlock(&job_mutex);
-      ret = 1;
-      break;
-    }
-    pthread_mutex_unlock(&job_mutex);
-  }
-
-  printf("total_jobs: %ld\n", alloc_list.total);
+  alloc_list.total -= 1;
   pthread_mutex_unlock(&alloc_mutex);
-  return ret;
+  release_num(num);
+  return 1;
 }
 
 static struct job_t *create_job(pid_t pid) {
@@ -220,21 +205,17 @@ void printf_jobs() {
 void *schedule_(void *arg) {
   int status;
   pid_t pid;
+  struct job_t *job = (struct job_t *)arg;
 
-  while (1) {
-
-    pid = waitpid(-1, &status, WNOHANG);
+  while(1) {
+    pid = waitpid(job->pid, &status, 0);
     if (pid > 0) {
-      if (WIFEXITED(status)) {
-	exit_code = WEXITSTATUS(status);
-      }
-      free_job(pid);
-      /* if (free_job(pid) == 1) { */
-      printf("[%d] done\n", pid);
-      /* } */
+      printf("[%d] done\n", job->pid);
+      release_job(job->num);
+      break;
     }
   }
-  (void) arg;
+
   pthread_exit(0);
 }
 
@@ -246,6 +227,8 @@ void init_job_thread() {
 int schedule(struct node_t *node) {
   pid_t pid;
   int status, ret;
+  pthread_t th;
+  struct job_t *job;
   node = process(node);
   ret = 0;
 
@@ -261,7 +244,8 @@ int schedule(struct node_t *node) {
       exit(run(node));
     }
 
-    register_job(pid);
+    job = register_job(pid);
+    pthread_create(&th, 0, schedule_, job);
 
     waitpid(pid, &status, WNOHANG);
 
