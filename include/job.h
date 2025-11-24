@@ -37,7 +37,7 @@ void init_job_thread();
 void init_free_list();
 struct job_t *register_job(pid_t pid);
 int schedule(struct node_t *node);
-void free_job(pid_t pid);
+size_t free_job(pid_t pid);
 void printf_jobs();
 
 #endif

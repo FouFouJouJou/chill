@@ -13,9 +13,6 @@ struct job_t *jobs[MAX_JOB_CAP];
 struct job_list_t free_list;
 struct job_list_t alloc_list;
 
-size_t recent = 0;
-size_t total = 0;
-
 static pthread_mutex_t job_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t alloc_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t free_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -102,7 +99,7 @@ struct job_node_t *get_num_(size_t num, struct job_list_t *list) {
     node = list->head;
     list->head = list->head->next;
     node->next = NULL;
-    return list->head;
+    return node;
   }
 
   node = list->head;
@@ -127,19 +124,17 @@ struct job_node_t *get_num_(size_t num, struct job_list_t *list) {
 }
 
 static void release_num(size_t num) {
-  /* struct job_node_t *node; */
-  (void) num;
+  struct job_node_t *node;
 
-  pthread_mutex_lock(&alloc_mutex);
-  /* node = get_num_(num, &alloc_list); */
-  /* free(node); */
-  printf("releasing: %ld\n", num);
+  node = get_num_(num, &alloc_list);
+  assert(node != NULL);
+
   alloc_list.total -= 1;
-  pthread_mutex_unlock(&alloc_mutex);
+  free(node);
 
-  /* pthread_mutex_lock(&free_mutex); */
-  /* add_node_(num, &free_list); */
-  /* pthread_mutex_unlock(&free_mutex); */
+  pthread_mutex_lock(&free_mutex);
+  add_node_(num, &free_list);
+  pthread_mutex_unlock(&free_mutex);
 }
 
 
@@ -158,21 +153,32 @@ void init_free_list() {
   }
 }
 
-void free_job(pid_t pid) {
-  size_t i, total;
-  pthread_mutex_lock(&alloc_mutex);
-  total = alloc_list.total;
-  pthread_mutex_unlock(&alloc_mutex);
+size_t free_job(pid_t pid) {
+  size_t i;
+  size_t ret;
 
-  for (i=0; i<total; ++i){
+  pthread_mutex_lock(&alloc_mutex);
+  if (alloc_list.total == 0) {
+    pthread_mutex_unlock(&alloc_mutex);
+    return 0;
+  }
+
+  ret = 0;
+  printf("total_jobs: %ld\n", alloc_list.total);
+  for (i=0; i<alloc_list.total; ++i) {
     pthread_mutex_lock(&job_mutex);
     if (jobs[i]->pid == pid) {
       release_num(jobs[i]->num);
       pthread_mutex_unlock(&job_mutex);
+      ret = 1;
       break;
     }
     pthread_mutex_unlock(&job_mutex);
   }
+
+  printf("total_jobs: %ld\n", alloc_list.total);
+  pthread_mutex_unlock(&alloc_mutex);
+  return ret;
 }
 
 static struct job_t *create_job(pid_t pid) {
@@ -192,26 +198,22 @@ struct job_t *register_job(pid_t pid) {
 }
 
 static void printf_job(struct job_t *job) {
-  printf("[%ld] %s %d\n", job->num+1, job_state_to_string(job->state), job->pid);
+  printf("[%ld] %s %d\n", job->num, job_state_to_string(job->state), job->pid);
 }
 
 void printf_jobs() {
-  /* struct job_node_t *node; */
+  struct job_node_t *node;
 
   pthread_mutex_lock(&alloc_mutex);
   printf("total jobs: %ld\n", alloc_list.total);
+
+  for (node = alloc_list.head; node != NULL; node = node->next) {
+    pthread_mutex_lock(&job_mutex);
+    printf_job(jobs[node->num]);
+    pthread_mutex_unlock(&job_mutex);
+  }
+
   pthread_mutex_unlock(&alloc_mutex);
-  (void) printf_job;
-
-  /* for (node = alloc_list.head; node != NULL; node = node->next) { */
-  /*   /\* printf("job\n"); *\/ */
-  /*   /\* printf("%p\n", (void *)(node)); *\/ */
-  /*   pthread_mutex_lock(&job_mutex); */
-  /*   printf_job(jobs[node->num]); */
-  /*   pthread_mutex_unlock(&job_mutex); */
-  /* } */
-
-  /* pthread_mutex_unlock(&alloc_mutex); */
 }
 
 /* TODO: check for signal status */
@@ -226,8 +228,10 @@ void *schedule_(void *arg) {
       if (WIFEXITED(status)) {
 	exit_code = WEXITSTATUS(status);
       }
-      printf("[%d] done\n", pid);
       free_job(pid);
+      /* if (free_job(pid) == 1) { */
+      printf("[%d] done\n", pid);
+      /* } */
     }
   }
   (void) arg;

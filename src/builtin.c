@@ -12,7 +12,6 @@
 #include <job.h>
 #include <signal.h>
 
-extern size_t recent;
 
 /* TODO: create an api without exposing jobs */
 extern struct job_t jobs[MAX_JOB_CAP];
@@ -204,9 +203,6 @@ static int fg(size_t argc, char **argv, char **env) {
   (void) argv;
   (void) env;
 
-  printf("resuming %d\n", jobs[recent].pid);
-  tcsetpgrp(STDIN_FILENO, jobs[recent].pid);
-  kill(-jobs[recent].pid, SIGCONT);
   return 0;
 }
 
