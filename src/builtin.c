@@ -52,7 +52,7 @@ static char *which__(const char *const cmd, const char *path) {
   char dir[1<<8];
   if(path == NULL) {
     return NULL;
-  }
+ }
 
   while ((delim = strchr(path, ':')) != NULL) {
     int dir_size;

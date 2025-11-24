@@ -8,12 +8,16 @@
 #include <parser.h>
 #include <tree.h>
 
-struct job_t jobs[MAX_JOB_CAP];
+struct job_t *jobs[MAX_JOB_CAP];
 struct job_list_t free_list;
 struct job_list_t alloc_list;
 
 size_t recent = 0;
 size_t total = 0;
+
+static pthread_mutex_t job_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t alloc_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t free_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 char *job_state_to_string(enum job_state_t state) {
   switch(state) {
@@ -73,9 +77,15 @@ static struct job_node_t *get_free_(struct job_list_t *list) {
   return node;
 }
 
-size_t lease_num(void) {
-  struct job_node_t *node = get_free_(&free_list);
+static size_t lease_num(void) {
+  struct job_node_t *node;
+  pthread_mutex_lock(&free_mutex);
+  node = get_free_(&free_list);
+  pthread_mutex_unlock(&free_mutex);
+
+  pthread_mutex_lock(&alloc_mutex);
   add_node__(node, &alloc_list);
+  pthread_mutex_unlock(&alloc_mutex);
   return node->num;
 }
 
@@ -107,22 +117,34 @@ struct job_node_t *get_num_(size_t num, struct job_list_t *list) {
 
 void free_num(size_t num) {
   struct job_node_t *node;
-  struct job_node_t *previous_node = get_num_(num, &alloc_list);
+  struct job_node_t *previous_node;
+
+  pthread_mutex_lock(&alloc_mutex);
+  previous_node = get_num_(num, &alloc_list);
   if (previous_node != alloc_list.head) {
-    assert(previous_node != NULL);
+    if (previous_node == NULL) {
+      pthread_mutex_unlock(&alloc_mutex);
+      exit(88);
+    }
   }
   if (previous_node == alloc_list.head) {
     alloc_list.head = alloc_list.head->next;
     node = previous_node;
     node->next = NULL;
+    pthread_mutex_lock(&free_mutex);
     add_node__(node, &free_list);
+    pthread_mutex_unlock(&free_mutex);
   } else {
     node = previous_node->next;
     previous_node->next = previous_node->next->next;
   }
+  pthread_mutex_unlock(&alloc_mutex);
 
+  pthread_mutex_lock(&free_mutex);
   add_node__(node, &free_list);
+  pthread_mutex_lock(&alloc_mutex);
   printf("lease: %ld, free: %ld\n", alloc_list.total, free_list.total);
+  pthread_mutex_unlock(&alloc_mutex);
 }
 
 void init_free_list() {
@@ -140,6 +162,10 @@ void init_free_list() {
   }
 }
 
+void free_job(pid_t pid) {
+  (void) pid;
+}
+
 /* TODO: check for signal status */
 void *schedule_(void *arg) {
   int status;
@@ -147,12 +173,31 @@ void *schedule_(void *arg) {
   struct job_node_t *node;
 
   while (1) {
+    pthread_mutex_lock(&alloc_mutex);
     node = alloc_list.head;
+    if (node == NULL) {
+      pthread_mutex_unlock(&alloc_mutex);
+      continue;
+    }
+
     while (node != NULL) {
-      pid = waitpid(jobs[node->num].pid, &status, WNOHANG);
+      pthread_mutex_unlock(&alloc_mutex);
+      pthread_mutex_lock(&job_mutex);
+      if (jobs[node->num]->state == JOB_STATE_STOPPED) {
+	/* TODO: schedule remove of the job */
+	pthread_mutex_unlock(&job_mutex);
+	continue;
+      }
+      pid = waitpid(jobs[node->num]->pid, &status, WNOHANG);
+      pthread_mutex_unlock(&job_mutex);
       if (pid > 0) {
 	printf("[%d] done\n", pid);
-	/* free_num(jobs[node->num].num); */
+	pthread_mutex_lock(&job_mutex);
+	jobs[node->num]->state = JOB_STATE_STOPPED;
+	pthread_mutex_unlock(&job_mutex);
+	/* free_job(pid); */
+	/* free(jobs[node->num]); */
+	/* free_num(jobs[node->num]->num); */
       }
     }
   }
@@ -165,41 +210,41 @@ void init_job_thread() {
   pthread_create(&th, 0, schedule_, NULL);
 }
 
-struct job_t *create_job(pid_t pid) {
+static struct job_t *create_job(pid_t pid) {
   struct job_t *job = calloc(1, sizeof(struct job_t));
   job->pid = pid;
-  job->state =JOB_STATE_RUNNING;
+  job->state = JOB_STATE_RUNNING;
   job->num = lease_num();
   return job;
 }
 
-void printf_list(struct job_list_t *list) {
-  struct job_node_t *node = list->head;
-  while (node != NULL) {
-    printf("%ld ", node->num);
-    node = node->next;
-  }
-  printf("\n");
+struct job_t *register_job(pid_t pid) {
+  struct job_t *job = create_job(pid);
+  pthread_mutex_lock(&job_mutex);
+  jobs[job->num] = job;
+  pthread_mutex_unlock(&job_mutex);
+  return job;
 }
 
-static void printf_job(struct job_t job) {
-  printf("[%ld] %s %d\n", job.num+1, job_state_to_string(job.state), job.pid);
+static void printf_job(struct job_t *job) {
+  printf("[%ld] %s %d\n", job->num+1, job_state_to_string(job->state), job->pid);
 }
 
 void printf_jobs() {
   struct job_node_t *node;
   printf("total jobs: %ld\n", alloc_list.total);
+  pthread_mutex_lock(&job_mutex);
   for (node = alloc_list.head; node != NULL; node = node->next) {
     /* printf("job\n"); */
     /* printf("%p\n", (void *)(node)); */
     printf_job(jobs[node->num]);
   }
+  pthread_mutex_unlock(&job_mutex);
 }
 
 int schedule(struct node_t *node) {
   pid_t pid;
   int status, ret;
-  struct job_t *job;
   node = process(node);
   ret = 0;
 
@@ -214,9 +259,7 @@ int schedule(struct node_t *node) {
       exit(run(node));
     }
 
-    job = create_job(pid);
-    jobs[job->num] = *job;
-    free(job);
+    register_job(pid);
 
     waitpid(pid, &status, WNOHANG);
 

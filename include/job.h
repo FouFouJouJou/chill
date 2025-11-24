@@ -34,10 +34,9 @@ struct job_t {
 
 void init_job_thread();
 void init_free_list();
-size_t lease_num();
-void free_num(size_t num);
-void printf_list(struct job_list_t *list);
-void printf_jobs();
+struct job_t *register_job(pid_t pid);
 int schedule(struct node_t *node);
+void free_job(pid_t pid);
+void printf_jobs();
 
 #endif

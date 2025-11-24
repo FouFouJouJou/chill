@@ -13,14 +13,13 @@
 #include <job.h>
 
 extern int exit_code;
-extern struct job_list_t free_list;
-extern struct job_list_t alloc_list;
 
 int main() {
 
   char string[1<<8];
   init_environ();
   init_free_list();
+
   init_job_thread();
   read_history();
 
