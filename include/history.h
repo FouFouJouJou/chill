@@ -15,6 +15,7 @@ struct history_t {
 };
 
 size_t sync_history(void);
+size_t save_history_to_fs();
 size_t append_cmd(const char *const cmd);
 void printf_history(void);
 void clear_history(void);

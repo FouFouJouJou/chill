@@ -13,6 +13,7 @@
 #include <job.h>
 
 extern int exit_code;
+extern char done;
 
 int main() {
 
@@ -21,7 +22,7 @@ int main() {
   init_free_list();
   sync_history();
 
-  while (1) {
+  while (!done) {
     struct node_t *node;
     int size;
 
@@ -32,10 +33,11 @@ int main() {
     }
 
     node = parse(string);
-    /* append_cmd(string); */
+    append_cmd(string);
     memset(string, 0, sizeof(string));
 
     schedule(node);
   }
+
   return EXIT_SUCCESS;
 }

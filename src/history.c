@@ -7,8 +7,9 @@
 #include <sys/stat.h>
 #include <history.h>
 
-struct history_t history;
-char *history_file = "/tmp/chill_history";
+static struct history_t history;
+static char *history_file = "/tmp/chill_history";
+char done = 0;
 
 static size_t read_from_file(const char *const file_name, char *buffer) {
   int fd, bytes_read;
@@ -62,14 +63,29 @@ size_t sync_history() {
 
 size_t append_cmd(const char *const cmd) {
   /* NOTE: trying FILE* instead of fd for a more ANSI C compliant code */
-  FILE *file = fopen(history_file, "a");
-  fwrite(cmd, sizeof(char), strlen(cmd), file);
-  fwrite("\n", sizeof(char), 1, file);
-  fclose(file);
+  size_t cmd_len;
+  cmd_len = strlen(cmd);
 
-  sync_history();
+  history.cmds[history.count] = calloc(cmd_len, sizeof(char));
+  memcpy(history.cmds[history.count], cmd, cmd_len);
+  history.cmds[history.count][cmd_len] = '\0';
+  history.count += 1;
 
   return 1;
+}
+
+size_t save_history_to_fs() {
+  size_t i;
+  FILE *file = fopen(history_file, "w");
+  for (i=0; i<history.count; ++i) {
+    char *cmd = history.cmds[i];
+    size_t cmd_len = strlen(history.cmds[i]);
+    fwrite(cmd, sizeof(char), cmd_len, file);
+    fwrite("\n", sizeof(char), 1, file);
+  }
+
+  fclose(file);
+  return history.count;
 }
 
 void printf_history() {
@@ -87,6 +103,7 @@ void clear_history() {
 
 void free_history() {
   size_t i;
+  save_history_to_fs();
   for (i=0; i<history.count; ++i) {
     free(history.cmds[i]);
   }

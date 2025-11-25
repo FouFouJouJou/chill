@@ -12,9 +12,9 @@
 #include <job.h>
 #include <signal.h>
 
-
 /* TODO: create an api without exposing jobs */
 extern struct job_t jobs[MAX_JOB_CAP];
+extern char done;
 
 int find_file_in_directory(const char *dirname, const char *filename_to_find) {
   DIR *dir;
@@ -222,7 +222,8 @@ static int exit_(size_t argc, char **argv, char **env) {
 
   free_environ();
   free_history();
-  exit(0);
+  done = 1;
+  return 0;
 }
 
 /* TODO: sort out this mess */
