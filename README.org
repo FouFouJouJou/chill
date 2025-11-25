@@ -31,13 +31,13 @@ A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
     - [X] output
     - [X] error
 - [X] env
-- [-] builtins [75%]
+- [-] builtins [87%]
   - [X] cd
   - [X] echo
   - [X] which
   - [X] exit
   - [X] export
-  - [ ] unset
+  - [X] unset
   - [X] history
   - [ ] more...
 
@@ -47,7 +47,7 @@ A (hopefully one day) POSIX-compliant shell implementation in raw ANSI C.
   - [ ] circular buffering
   - [ ] more operations
 - [X] signals
-- [-] jobs [33%]
+- [-] jobs [25%]
   - [X] create
   - [ ] fg
   - [ ] bg

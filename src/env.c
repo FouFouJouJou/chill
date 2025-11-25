@@ -178,7 +178,9 @@ static size_t setenvstr_(const char *pair, char **env) {
 }
 
 size_t setenvironstr(const char *pair) {
+  printf("%ld\n", environ_.total);
   environ_.total += setenvstr_(pair, environ_.env);
+  printf("%ld\n", environ_.total);
   return environ_.total;
 }
 
@@ -225,20 +227,13 @@ size_t setup_env(struct cmd_t *cmd) {
   char **var;
 
   for (var = environ_.env; *var != NULL; var++) {
-    if (strstr(*var, "PATH") == *var
-	|| strstr(*var, "HOME") == *var
-	|| strstr(*var, "TERM") == *var
-	|| strstr(*var, "USER") == *var
-	|| strstr(*var, "hello") == *var)
-	{
-      char *env_var;
-      size_t var_len;
-      var_len = strlen(*var);
-      env_var = calloc(var_len+1, sizeof(char));
-      memcpy(env_var, *var, var_len);
-      env_var[var_len] = '\0';
-      cmd->env[cmd->total_env++] = env_var;
-    }
+    char *env_var;
+    size_t var_len;
+    var_len = strlen(*var);
+    env_var = calloc(var_len+1, sizeof(char));
+    memcpy(env_var, *var, var_len);
+    env_var[var_len] = '\0';
+    cmd->env[cmd->total_env++] = env_var;
   }
 
   return cmd->total_env;
