@@ -7,6 +7,7 @@
 #include <job.h>
 #include <parser.h>
 #include <tree.h>
+/* TODO: recent and fg */
 
 extern int exit_code;
 struct job_t *jobs[MAX_JOB_CAP];
