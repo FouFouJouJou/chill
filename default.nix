@@ -5,7 +5,7 @@ pkgs.stdenv.mkDerivation {
 
   src= ./.;
 
-  nativeBuildInputs = with pkgs; [ clang ninja meson ];
+  nativeBuildInputs = with pkgs; [ ninja meson ];
 
   meta = with pkgs.lib; {
     description = "Just a chill shell";
