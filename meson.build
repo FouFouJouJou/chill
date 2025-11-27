@@ -5,6 +5,7 @@ project(
   default_options: ['warning_level=3', 'werror=true', 'c_std=c89']
 )
 
+
 incdir = include_directories('include')
 
 sources = files(
@@ -27,4 +28,5 @@ executable(
   'chill',
   sources,
   include_directories: incdir,
+  install: true
 )

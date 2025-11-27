@@ -12,7 +12,7 @@ extern char **environ;
 struct environ_t environ_;
 extern int exit_code;
 
-void init_environ() {
+void init_environ(void) {
   char **env;
   for (env = environ; *env != NULL; ++env) {
     size_t len;
@@ -197,14 +197,14 @@ size_t setenviron(const char *name, const char *value, int overwrite) {
   return environ_.total;
 }
 
-void printf_environ() {
+void printf_environ(void) {
   size_t i;
   for (i=0; i<environ_.total; ++i) {
     printf("%ld %s\n", i+1, environ_.env[i]);
   }
 }
 
-void free_environ() {
+void free_environ(void) {
   size_t i;
   for (i=0; i<environ_.total; ++i) {
     free(environ_.env[i]);

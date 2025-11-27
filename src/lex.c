@@ -41,7 +41,7 @@ const char *token_type_to_string(enum token_type_t type) {
   }
 }
 
-struct token_t *symbol_tknzr(const char *const string, const struct tknzr_t *const tknzr) {
+static struct token_t *symbol_tknzr(const char *const string, const struct tknzr_t *const tknzr) {
   struct token_t *tkn;
   size_t literal_size;
   tkn = NULL;
@@ -58,7 +58,7 @@ struct token_t *symbol_tknzr(const char *const string, const struct tknzr_t *con
   return tkn;
 }
 
-struct token_t *string_tknzr(const char *const string) {
+static struct token_t *string_tknzr(const char *const string) {
   struct token_t *tkn;
   char quotes;
   const char *string_p;
@@ -99,13 +99,13 @@ struct token_t *string_tknzr(const char *const string) {
   return tkn;
 }
 
-void append_tknzr(struct tknzr_t tknzrs[], char *literal, enum token_type_t type, size_t *count) {
+static void append_tknzr(struct tknzr_t tknzrs[], char *literal, enum token_type_t type, size_t *count) {
   tknzrs[*count].type = type;
   tknzrs[*count].literal = literal;
   (*count)+=1;
 }
 
-struct token_t make_eof_token() {
+static struct token_t make_eof_token(void) {
   struct token_t tkn;
   tkn.type = TOKEN_TYPE_EOF;
   return tkn;

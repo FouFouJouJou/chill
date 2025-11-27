@@ -35,7 +35,7 @@ static size_t read_from_file(const char *const file_name, char *buffer) {
   return (size_t) bytes_read;
 }
 
-size_t sync_history() {
+size_t sync_history(void) {
   size_t idx;
   char buffer[1<<8];
   char *buffer_p, *new_line_delim, *line;
@@ -74,7 +74,7 @@ size_t append_cmd(const char *const cmd) {
   return 1;
 }
 
-size_t save_history_to_fs() {
+size_t save_history_to_fs(void) {
   size_t i;
   FILE *file = fopen(history_file, "w");
   for (i=0; i<history.count; ++i) {
@@ -88,20 +88,20 @@ size_t save_history_to_fs() {
   return history.count;
 }
 
-void printf_history() {
+void printf_history(void) {
   size_t i;
   for (i=0; i<history.count; ++i) {
     printf("%ld %s\n", i+1, history.cmds[i]);
   }
 }
 
-void clear_history() {
+void clear_history(void) {
   FILE *file;
   file = fopen(history_file, "w");
   fclose(file);
 }
 
-void free_history() {
+void free_history(void) {
   size_t i;
   save_history_to_fs();
   for (i=0; i<history.count; ++i) {

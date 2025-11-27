@@ -141,7 +141,7 @@ static void release_num(size_t num) {
 }
 
 
-void init_free_list() {
+void init_free_list(void) {
   size_t i;
   free_list.head = NULL;
   free_list.tail = NULL;
@@ -184,7 +184,7 @@ static void printf_job(struct job_t *job) {
   printf("[%ld] %s %d\n", job->num, job_state_to_string(job->state), job->pid);
 }
 
-void printf_jobs() {
+void printf_jobs(void) {
   struct job_node_t *node;
 
   pthread_mutex_lock(&alloc_mutex);

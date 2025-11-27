@@ -33,9 +33,9 @@ struct job_t {
   pid_t pid;
 };
 
-void init_job_thread();
-void init_free_list();
+void init_job_thread(void);
+void init_free_list(void);
 int schedule(struct node_t *node);
-void printf_jobs();
+void printf_jobs(void);
 
 #endif

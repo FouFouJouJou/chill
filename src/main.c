@@ -15,8 +15,7 @@
 extern int exit_code;
 extern char done;
 
-int main() {
-
+int main(void) {
   char string[1<<8];
   init_environ();
   init_free_list();
